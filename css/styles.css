@@ -1,0 +1,57 @@
+label {
+    float: left;
+}
+
+#textinputarea {
+    width: 100%;
+	height: calc(100% - 43px);
+}
+
+#footer {
+    position: fixed;
+	z-index: 2;
+    bottom: 10px;
+    width: calc(100% - 20px);
+	height: 300px;
+    color: #042E64;
+    font-size: 16px;
+    font-family: sans-serif;
+    font-weight: bold;
+    text-shadow: 0 1px 0 #84BAFF;
+    box-shadow: 0 0 15px #00214B;
+	padding-left: 1px; 
+	padding-right: 1px; 
+}
+
+#plotarea {
+    position: absolute;
+	z-index: -1;
+    width: calc(100% - 18px);
+	height: calc(100% - 370px);
+	top: 20px;
+	background: #FFFFF0;
+    color: #042E64;
+    font-size: 16px;
+    font-family: sans-serif;
+    font-weight: bold;
+    text-shadow: 0 1px 0 #84BAFF;
+    box-shadow: 0 0 15px #00214B;
+	padding: 0;
+	margin-top: 20;
+}
+
+
+#title {
+    position: fixed;
+	z-index: -1;
+    width: calc(100% - 18px);
+	height: 20px;
+	/* background: #D0E5FF; */
+    color: #042E64;
+    font-size: 16px;
+    font-family: sans-serif;
+    font-weight: bold;
+    text-shadow: 0 1px 0 #84BAFF;
+    box-shadow: 0 0 15px #00214B;
+	margin-bottom: 10px;
+}
