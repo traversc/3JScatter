@@ -30,9 +30,9 @@
 		</div>
 		<script>
 			var camera, controls, scene, renderer;
-			var points = [];
+			var cubes = [];
 			var histLines = [];
-			//var cube_outlines = [];
+			var cube_outlines = [];
 			var texts = [];
 			var light_enabled = true;
 			var shadows_enabled = false;
@@ -41,7 +41,7 @@
 			var controls_enabled = false;
 
 			function demo() {
-				document.getElementById('textinputarea').value = demostring01;
+				document.getElementById('textinputarea').value = csvstring;
 				init();
 			}
 			
@@ -110,7 +110,7 @@
 				var pch_ind = labels.indexOf("pch");
 				var color_ind = labels.indexOf("color");
 				var histcolor_ind = labels.indexOf("histColor");
-				var outlineColor_ind = labels.indexOf("outlineColor");
+				var outlinecolor_ind = labels.indexOf("outlineColor");
 				
 				var pointGeo = new THREE.Geometry(); //what is this for again? :<
 				
@@ -125,13 +125,28 @@
 					var y = ycoords[i];
 					var z = zcoords[i];
 					var color = ifelser(color_ind == -1,default_color,unfiltered[i][color_ind]);
-					var outlineColor = ifelser(outlineColor_ind == -1,default_outlineColor,unfiltered[i][outlineColor_ind]);
-					var point = pointMesh(pch, size, color, outlineColor);
-					point.position.x = x;
-					point.position.y = y;
-					point.position.z = z;
-					point.castShadow = true;
-					scene.add(point);
+					var outlinecolor = ifelser(outlinecolor_ind == -1,default_outlinecolor,unfiltered[i][outlinecolor_ind]);
+					if(pch == 1 || pch == 11) {
+						var geometry = new THREE.SphereGeometry(size,12,12);
+					}
+					var material = new THREE.MeshLambertMaterial( { emissive: color, ambient: color, shading: THREE.FlatShading } );
+					var cube = new THREE.Mesh( geometry, material );
+					cube.position.x = x;
+					cube.position.y = y;
+					cube.position.z = z;
+					cube.castShadow = true;
+					scene.add( cube );
+					
+					if(pch == 11) {
+						var geometry = new THREE.TorusGeometry(size * 1.05, size * 0.15, 12, 12);
+						var outline_mat = new THREE.MeshBasicMaterial({color: outlinecolor, wireframe: false});
+						var cube_outline = new THREE.Mesh( geometry, outline_mat );
+						cube_outline.position.x = x;
+						cube_outline.position.y = y;
+						cube_outline.position.z = z;
+						cube_outlines.push(cube_outline);
+						scene.add(cube_outline);
+					}	
 				}
 				for (var i = 1; i < unfiltered.length; i ++) {
 					var x = xcoords[i];
@@ -255,9 +270,9 @@
 			function animate() {
 				if(controls_enabled) {
 					requestAnimationFrame(animate);
-					//for(var k = 0; k<cube_outlines.length; k++){
-					//	cube_outlines[k].lookAt( camera.position );  					 
-					//}
+					for(var k = 0; k<cube_outlines.length; k++){
+						cube_outlines[k].lookAt( camera.position );  					 
+					}
 					for(var k = 0; k<texts.length; k++){
 						texts[k].quaternion.copy( camera.quaternion );					
 					}
