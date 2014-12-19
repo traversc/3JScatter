@@ -1,22 +1,26 @@
 <html>
 <head>
-<title>Testing</title>
+<title>3JScatter - R style 3D scatter plotter</title>
 	<script src="js/three.min.js"></script>
 	<script src="js/OrbitControls.js"></script>
 	<script src="js/d3.v3.min.js"></script>
 	<script src="js/helvetiker_regular.typeface.js"></script>
-	<script src="js/customDataAndFunctions.js"></script>
 	<script src="js/dat.gui.min.js"></script>
+	<script src="js/jquery-1.11.2.min.js"></script>
+	<script src="js/customDataAndFunctions.js"></script>
 	<link type="text/css" href="css/styles.css" rel="stylesheet"/>
 	<!--script src="js/SVGRenderer.js"></script-->
 
 </head>
 	<body>
 		<div id="title">Plot Area</div>
-		<div id="plotarea"></div>
+		<div id="plotarea"><br>
+		&nbsp;&nbsp;&nbsp;&nbsp;Demo 1: <a href="javascript:demo1();">Tissue sub-type Principal Component Analysis</a><br>
+		&nbsp;&nbsp;&nbsp;&nbsp;Demo 2: <a href="javascript:demo2();">Different shape example</a><br><br>
+		</div>
 		<div id ="footer">
 		<form id="form1">
-			Input Data<br><input type="button" value="Plot Data" onclick="init()"><input type="button" value="Demo" onclick="demo()">
+			Input Data<br><input type="button" value="Plot Data" onclick="init()"><input type="button" value="Reset" onclick="location.reload();">
 			<textarea id="textinputarea" rows="5"></textarea>
 			<!--input type="button" value="Plot Data" onclick="init()">
 			<!--input type="button" value="Demo" onclick="init()">
@@ -40,10 +44,17 @@
 			
 			var controls_enabled = false;
 
-			function demo() {
-				document.getElementById('textinputarea').value = demostring01;
+			function demo1() {
+				document.getElementById('textinputarea').value = demostring01; //convert to jquery
 				init();
 			}
+			
+			function demo2() {
+				cam_init_pos = [-100,-100,-100];
+				document.getElementById('#textinputarea').value = demostring02; //convert to jquery
+				init();
+			}
+			
 			
 			function exportpng() {
 				window.open( renderer.domElement.toDataURL( 'image/png' ), 'screenshot' );
@@ -55,11 +66,8 @@
 					animate();
 				}
 			}
-			function reset() { //reload webpage, is there a better way?
-				location.reload();
-			}
-			//to do: throw controls into another js file to be more organized
 			var gui = new dat.GUI({width:300});
+			
 			var light_control = gui.add(this, 'light_enabled').name('Add Light');
 			var shadow_control = gui.add(this, 'shadows_enabled').name('Enable Shadows');
 			var fix_size_control = gui.add(this, 'fix_size').name('Fix Plot Size');
@@ -69,10 +77,15 @@
 			plotsize_folder.add(this, 'fix_height', 480,1440).name('Plot Height');
 			plotsize_folder.add(this, 'fix_width', 640,2560).name('Plot Width');
 			//gui.add(this, 'init').name('Plot Data');
+			function reset() { //reload webpage, is there a better way?
+				location.reload();
+			}
 			gui.add(this, 'reset').name('Reset');
 			gui.add(this, 'freeze').name('Freeze/Unfreeze');
-			gui.add(this, 'exportpng').name('Export as PNG');			
+			gui.add(this, 'exportpng').name('Export as PNG');
+			gui.close();			
 			function init() {
+				$( "#plotarea" ).empty();
 				renderer = new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer: true, alpha: true});
 				//renderer = new THREE.WebGLRenderer();
 				//renderer = new THREE.SVGRenderer({antialias:true});
@@ -112,8 +125,6 @@
 				var histcolor_ind = labels.indexOf("histColor");
 				var outlineColor_ind = labels.indexOf("outlineColor");
 				
-				var pointGeo = new THREE.Geometry(); //what is this for again? :<
-				
 				var xcoords = normalize(unfiltered, x_ind, xscale);
 				var ycoords = normalize(unfiltered, y_ind, yscale);
 				var zcoords = normalize(unfiltered, z_ind, zscale);
@@ -133,7 +144,9 @@
 					point.castShadow = true;
 					scene.add(point);
 				}
-				for (var i = 1; i < unfiltered.length; i ++) {
+				
+				//could make hist line a tube instead, for more customizability
+				for (var i = 0; i < unfiltered.length; i ++) {
 					var x = xcoords[i];
 					var y = ycoords[i];
 					var z = zcoords[i];
@@ -242,9 +255,9 @@
 					scene.add( light );
 				}
 				
-				camera.position.z = 100;
-				camera.position.x = 100;
-				camera.position.y = -100;
+				camera.position.z = cam_init_pos[0];
+				camera.position.x = cam_init_pos[1];
+				camera.position.y = cam_init_pos[2];
 				camera.up = v( 0, 0, 1 );
 				controls = new THREE.OrbitControls( camera );
 				controls.damping = 0.2;
