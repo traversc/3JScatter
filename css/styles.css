@@ -9,7 +9,7 @@ label {
 
 #footer {
     position: fixed;
-	z-index: 2;
+	z-index: 0;
     bottom: 10px;
     width: calc(100% - 20px);
 	height: 300px;
@@ -25,7 +25,7 @@ label {
 
 #plotarea {
     position: absolute;
-	z-index: 10;
+	z-index: 0;
     width: calc(100% - 18px);
 	height: calc(100% - 370px);
 	top: 20px;

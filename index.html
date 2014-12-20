@@ -1,6 +1,6 @@
 <html>
 <head>
-<title>3JScatter - R style 3D scatter plotter</title>
+<title>3JScatter: 3D scatter plotter</title>
 	<script src="js/three.min.js"></script>
 	<script src="js/OrbitControls.js"></script>
 	<script src="js/d3.v3.min.js"></script>
@@ -13,7 +13,7 @@
 
 </head>
 	<body>
-		<div id="title">Plot Area</div>
+		<div id="title">3JScatter: 3D scatter plotter</div>
 		<div id="plotarea"><br>
 		&nbsp;&nbsp;&nbsp;&nbsp;Demo 1: <a href="javascript:demo1();">Tissue sub-type Principal Component Analysis</a><br>
 		&nbsp;&nbsp;&nbsp;&nbsp;Demo 2: <a href="javascript:demo2();">Different shape example</a><br><br>
@@ -41,23 +41,24 @@
 			var light_enabled = true;
 			var shadows_enabled = false;
 			var fix_size = false;
-			
 			var controls_enabled = false;
 
 			function demo1() {
-				document.getElementById('textinputarea').value = demostring01; //convert to jquery
+				cam_init_pos = [100,55,70];
+				$('#textinputarea').get(0).value = demostring01;
+				$("#plotarea").empty();
 				init();
 			}
 			
 			function demo2() {
-				cam_init_pos = [-100,-100,-100];
-				document.getElementById('#textinputarea').value = demostring02; //convert to jquery
+				cam_init_pos = [20,-10,-150];
+				$('#textinputarea').get(0).value = demostring02;
+				$("#plotarea").empty();
 				init();
 			}
 			
-			
 			function exportpng() {
-				window.open( renderer.domElement.toDataURL( 'image/png' ), 'screenshot' );
+				window.open(renderer.domElement.toDataURL('image/png'),'screenshot');
 			}	
 			function freeze() {
 				controls_enabled = !controls_enabled;
@@ -85,7 +86,6 @@
 			gui.add(this, 'exportpng').name('Export as PNG');
 			gui.close();			
 			function init() {
-				$( "#plotarea" ).empty();
 				renderer = new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer: true, alpha: true});
 				//renderer = new THREE.WebGLRenderer();
 				//renderer = new THREE.SVGRenderer({antialias:true});
