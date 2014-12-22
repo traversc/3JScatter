@@ -40,7 +40,7 @@
 			var texts = [];
 			var controls_enabled = false;
 			function demo1() {
-				cam_init_pos = [100,55,70];
+				cam_init_pos = [75,120,150];
 				$('#textinputarea').get(0).value = demostring01;
 				$("#plotarea").empty();
 				init();
@@ -70,9 +70,9 @@
 			var shadows_enabled = false;
 			var fix_plot_dimensions = false;
 			var fix_axes_loc = false;
-			var axes_origin_x = 0;
-			var axes_origin_y = 0;
-			var axes_origin_z = 0;
+			var axes_origin_x = '0';
+			var axes_origin_y = '0';
+			var axes_origin_z = '0';
 			var gui = new dat.GUI({width:300});
 			gui.remember(this);
 			localStorage.setItem(document.location.href + '.isLocal','true'); //default save to local storage automatically
@@ -142,18 +142,21 @@
 				var histcolor_ind = labels.indexOf("histColor");
 				var outlineColor_ind = labels.indexOf("outlineColor");
 				
-				var xcoords = normalize(unfiltered, x_ind, xscale);
-				var ycoords = normalize(unfiltered, y_ind, yscale);
-				var zcoords = normalize(unfiltered, z_ind, zscale);
+				var xcoords = unfiltered.map(function(v) {return rescalePosition(v[x_ind],colMin(unfiltered,x_ind),colMax(unfiltered,x_ind),xscale)});
+				var ycoords = unfiltered.map(function(v) {return rescalePosition(v[y_ind],colMin(unfiltered,y_ind),colMax(unfiltered,y_ind),yscale)});
+				var zcoords = unfiltered.map(function(v) {return rescalePosition(v[z_ind],colMin(unfiltered,z_ind),colMax(unfiltered,z_ind),zscale)});
+				//var xcoords = rescalePosition(unfiltered, x_ind, xscale);
+				//var ycoords = normalize(unfiltered, y_ind, yscale);
+				//var zcoords = normalize(unfiltered, z_ind, zscale);
 				
 				for (var i = 0; i < unfiltered.length; i ++) {
-					var size = ifelser(size_ind == -1,default_size,unfiltered[i][size_ind]);
-					var pch = ifelser(size_ind == -1,default_pch,unfiltered[i][pch_ind]);
+					var size = size_ind == -1 ? default_size : unfiltered[i][size_ind];
+					var pch = size_ind == -1 ? default_pch : unfiltered[i][pch_ind];
 					var x = xcoords[i];
 					var y = ycoords[i];
 					var z = zcoords[i];
-					var color = ifelser(color_ind == -1,default_color,unfiltered[i][color_ind]);
-					var outlineColor = ifelser(outlineColor_ind == -1,default_outlineColor,unfiltered[i][outlineColor_ind]);
+					var color = color_ind == -1 ? default_color : unfiltered[i][color_ind];
+					var outlineColor = outlineColor_ind == -1 ? default_outlineColor : unfiltered[i][outlineColor_ind];
 					var point = pointMesh(pch, size, color, outlineColor);
 					point.position.x = x;
 					point.position.y = y;
@@ -167,8 +170,8 @@
 					var x = xcoords[i];
 					var y = ycoords[i];
 					var z = zcoords[i];
-					var hist = ifelser(hist_ind == -1,default_hist,unfiltered[i][hist_ind]);
-					var histcolor = ifelser(histcolor_ind == -1,default_histcolor,unfiltered[i][histcolor_ind]);
+					var hist = hist_ind == -1 ? default_hist : unfiltered[i][hist_ind];
+					var histcolor = histcolor_ind == -1 ? default_histcolor : unfiltered[i][histcolor_ind];
 					if(hist == 1) {
 						var lineGeo = new THREE.Geometry();
 						lineGeo.vertices.push(
@@ -192,17 +195,23 @@
 						scene.add(line);
 					}
 				}
-
+				
+				//coordinate axes: to do: clean up and make more organized
+				if(fix_axes_loc) {
+					ao_rescaled_x = rescalePosition(parseFloat(axes_origin_x),colMin(unfiltered,x_ind),colMax(unfiltered,x_ind),xscale);
+					ao_rescaled_y = rescalePosition(parseFloat(axes_origin_y),colMin(unfiltered,y_ind),colMax(unfiltered,y_ind),yscale);
+					ao_rescaled_z = rescalePosition(parseFloat(axes_origin_z),colMin(unfiltered,z_ind),colMax(unfiltered,z_ind),zscale);
+				} else {
+					ao_rescaled_x = 0;
+					ao_rescaled_y = 0;
+					ao_rescaled_z = 0;
+				}
 				var lineGeo = new THREE.Geometry();
 				lineGeo.vertices.push(
-					v(xscale * 1.25, 0, 0), v(-xscale * 1.25, 0, 0),
-					v(0, yscale * 1.25, 0), v(0, -yscale * 1.25, 0),
-					v(0, 0, zscale * 1.25), v(0, 0, -zscale * 1.25)
-				);
-				var lineMat = new THREE.LineBasicMaterial({
-					color: 0x000000,
-					lineWidth: 1
-				});
+					v(xscale * 1.25, ao_rescaled_y, ao_rescaled_z), v(-xscale * 1.25, ao_rescaled_y, ao_rescaled_z),
+					v(ao_rescaled_x, yscale * 1.25, ao_rescaled_z), v(ao_rescaled_x, -yscale * 1.25, ao_rescaled_z),
+					v(ao_rescaled_x, ao_rescaled_y, zscale * 1.25), v(ao_rescaled_x, ao_rescaled_y, -zscale * 1.25));
+				var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
 				var line = new THREE.Line(lineGeo, lineMat);
 				line.type = THREE.Lines;
 				scene.add(line);
@@ -217,15 +226,15 @@
 				var material = new THREE.MeshBasicMaterial({ color: 0x000000 });
 				material.side = THREE.DoubleSide;
 				zarrow = new THREE.Mesh(geometry, material);
-				zarrow.position.z = zscale * 1.25;
+				zarrow.position.set(ao_rescaled_x, ao_rescaled_y, zscale * 1.25);
 				zarrow.rotation.x = Math.PI/2;
 				scene.add( zarrow );
 				xarrow = new THREE.Mesh(geometry, material);
-				xarrow.position.x = xscale * 1.25;
+				xarrow.position.set(xscale * 1.25, ao_rescaled_y, ao_rescaled_z);
 				xarrow.rotation.z = -Math.PI/2;
 				scene.add( xarrow );
 				yarrow = new THREE.Mesh(geometry, material);
-				yarrow.position.y = yscale * 1.25 + 1;
+				yarrow.position.set(ao_rescaled_x, xscale * 1.25 + 1, ao_rescaled_z);
 				scene.add( yarrow );
 				
 				// bottom plane for shadows / reflections
@@ -235,10 +244,8 @@
 				plane.receiveShadow = true;
 				plane.position.z = -zscale * 1.25;
 				scene.add( plane );
-				
 
 				//text
-
 				//text3d.computeBoundingBox();
 				//var centerOffsetx = -0.5 * ( text3d.boundingBox.max.x - text3d.boundingBox.min.x );
 				//var centerOffsetz = -0.5 * ( text3d.boundingBox.max.z - text3d.boundingBox.min.z );
@@ -246,19 +253,19 @@
 				var text3d = new THREE.TextGeometry( "x", {size: 2,height: 0,curveSegments: 2,font: "helvetiker"});
 				THREE.GeometryUtils.center( text3d )
 				var x_lab = new THREE.Mesh( text3d, textMaterial );
-				x_lab.position.x = xscale * 1.35;
+				x_lab.position.set(xscale * 1.35, ao_rescaled_y, ao_rescaled_z);
 				texts.push(x_lab);
 				scene.add( x_lab );
 				var text3d = new THREE.TextGeometry( "y", {size: 2,height: 0,curveSegments: 2,font: "helvetiker"});
 				var y_lab = new THREE.Mesh( text3d, textMaterial );
 				THREE.GeometryUtils.center( text3d )
-				y_lab.position.y = yscale * 1.35;
+				y_lab.position.set(ao_rescaled_x, xscale * 1.35, ao_rescaled_z);
 				texts.push(y_lab);
 				scene.add( y_lab );
 				var text3d = new THREE.TextGeometry( "z", {size: 2,height: 0,curveSegments: 2,font: "helvetiker"});
 				var z_lab = new THREE.Mesh( text3d, textMaterial );
 				THREE.GeometryUtils.center( text3d )
-				z_lab.position.z = zscale * 1.45;
+				z_lab.position.set(ao_rescaled_x, ao_rescaled_y, zscale * 1.45);
 				texts.push(z_lab);
 				scene.add( z_lab );
 					
