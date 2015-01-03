@@ -252,12 +252,21 @@
 					ao_rescaled_y = 0;
 					ao_rescaled_z = 0;
 				}
-				var lineGeo = new THREE.Geometry();
-				lineGeo.vertices.push(
-					v(xscale * 1.25, ao_rescaled_y, ao_rescaled_z), v(-xscale * 1.25, ao_rescaled_y, ao_rescaled_z),
-					v(ao_rescaled_x, yscale * 1.25, ao_rescaled_z), v(ao_rescaled_x, -yscale * 1.25, ao_rescaled_z),
-					v(ao_rescaled_x, ao_rescaled_y, zscale * 1.25), v(ao_rescaled_x, ao_rescaled_y, -zscale * 1.25));
 				var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
+				var lineGeo = new THREE.Geometry();
+				lineGeo.vertices.push(v(xscale * 1.25, ao_rescaled_y, ao_rescaled_z), v(-xscale * 1.25, ao_rescaled_y, ao_rescaled_z));
+				var line = new THREE.Line(lineGeo, lineMat);
+				line.type = THREE.Lines;
+				scene.add(line);
+				var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
+				var lineGeo = new THREE.Geometry();
+				lineGeo.vertices.push(v(ao_rescaled_x, yscale * 1.25, ao_rescaled_z), v(ao_rescaled_x, -yscale * 1.25, ao_rescaled_z));
+				var line = new THREE.Line(lineGeo, lineMat);
+				line.type = THREE.Lines;
+				scene.add(line);
+				var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
+				var lineGeo = new THREE.Geometry();
+				lineGeo.vertices.push(v(ao_rescaled_x, ao_rescaled_y, zscale * 1.25), v(ao_rescaled_x, ao_rescaled_y, -zscale * 1.25));
 				var line = new THREE.Line(lineGeo, lineMat);
 				line.type = THREE.Lines;
 				scene.add(line);
