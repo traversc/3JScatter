@@ -1,7 +1,7 @@
 <html>
 <head>
 <title>3JScatter: 3D scatter plotter</title>
-	<script src="js/three.min.js"></script>
+	<script src="js/three.min_v69.js"></script>  
 	<script src="js/OrbitControls.js"></script>
 	<script src="js/d3.v3.min.js"></script>
 	<script src="js/helvetiker_regular.typeface.js"></script>
@@ -22,14 +22,6 @@
 		<form id="form1">
 			Input Data<br><input type="button" value="Plot Data" onclick="init()"><input type="button" value="Reset" onclick="location.reload();">
 			<textarea id="textinputarea" rows="5"></textarea>
-			<!--input type="button" value="Plot Data" onclick="init()">
-			<!--input type="button" value="Demo" onclick="init()">
-			<!--textarea id="svgoutput" rows="5"></textarea-->
-			<!--input type="button" value="Go" onclick="init()" /-->
-			<!--input type="button" value="Enable Shadows" onclick="enableshadows()" /-->
-			<!--input type="button" value="Enable histogram lines" onclick="enablehistXY()" /-->
-			<!--input type="button" value="Stop" onclick="uninit()" /-->
-			<!--input type="button" value="Export" onclick="exportpng()" /-->
 		</form>
 		</div>
 		<script>
@@ -139,16 +131,18 @@
 				var hist_ind = labels.indexOf("hist");
 				var pch_ind = labels.indexOf("pch");
 				var color_ind = labels.indexOf("color");
-				var histcolor_ind = labels.indexOf("histColor");
-				var outlineColor_ind = labels.indexOf("outlineColor");
+				var hist_color_ind = labels.indexOf("hist_color");
+				var outline_color_ind = labels.indexOf("outline_color");
+				var lty_ind = labels.indexOf("lty");
+				var line_size_ind = labels.indexOf("line_size");
+				var line_color_ind = labels.indexOf("line_color");
 				
 				var xcoords = unfiltered.map(function(v) {return rescalePosition(v[x_ind],colMin(unfiltered,x_ind),colMax(unfiltered,x_ind),xscale)});
 				var ycoords = unfiltered.map(function(v) {return rescalePosition(v[y_ind],colMin(unfiltered,y_ind),colMax(unfiltered,y_ind),yscale)});
 				var zcoords = unfiltered.map(function(v) {return rescalePosition(v[z_ind],colMin(unfiltered,z_ind),colMax(unfiltered,z_ind),zscale)});
-				//var xcoords = rescalePosition(unfiltered, x_ind, xscale);
-				//var ycoords = normalize(unfiltered, y_ind, yscale);
-				//var zcoords = normalize(unfiltered, z_ind, zscale);
 				
+				//add points to scene
+				var point_radii = []; for (var i = 0; i < unfiltered.length; i++) point_radii[i] = 0; //initialize point radius array
 				for (var i = 0; i < unfiltered.length; i ++) {
 					var size = size_ind == -1 ? default_size : unfiltered[i][size_ind];
 					var pch = size_ind == -1 ? default_pch : unfiltered[i][pch_ind];
@@ -156,8 +150,24 @@
 					var y = ycoords[i];
 					var z = zcoords[i];
 					var color = color_ind == -1 ? default_color : unfiltered[i][color_ind];
-					var outlineColor = outlineColor_ind == -1 ? default_outlineColor : unfiltered[i][outlineColor_ind];
-					var point = pointMesh(pch, size, color, outlineColor);
+					var outline_color = outline_color_ind == -1 ? default_outline_color : unfiltered[i][outline_color_ind];
+					var point = pointMesh(pch, size, color, outline_color);
+					
+					//compute bounding boxes
+					if(point instanceof THREE.Mesh) {
+						var geom = point.geometry;
+						geom.computeBoundingSphere();
+						point_radii[i] = geom.boundingSphere.radius;
+					} else { //instanceof THREE.Object3D
+						for (var j = 0; j < point.children.length; j ++) {
+							point.children[j].geometry.computeBoundingSphere();
+							if(point.children[j].geometry.boundingSphere.radius > point_radii[i]) {
+								point_radii[i] = point.children[j].geometry.boundingSphere.radius;
+							}
+						}
+					}
+					point_radii[i] = point_radii[i] * 1.05;
+					
 					point.position.x = x;
 					point.position.y = y;
 					point.position.z = z;
@@ -165,19 +175,55 @@
 					scene.add(point);
 				}
 				
+				//add line segments to scene
+				if(lty_ind != -1) {
+					var prev_coords = undefined;
+					for (var i = 0; i < unfiltered.length; i ++) {
+						var x = xcoords[i];
+						var y = ycoords[i];
+						var z = zcoords[i];
+						if(typeof prev_coords == "undefined" || lty == "0") {
+							prev_coords = [x,y,z];
+							continue;
+						}
+						var lty = unfiltered[i][lty_ind] != "" ? unfiltered[i][lty_ind] : default_lty;
+						var line_size = line_size_ind == -1 ? default_line_size : unfiltered[i][line_size_ind];
+						line_size = line_size != "" ? line_size : default_line_size;
+						var line_color = line_color_ind == -1 ? default_line_color : unfiltered[i][line_color_ind];
+						line_color = line_color != "" ? line_color : default_line_color;
+						if(lty == "2") {
+							p1 = v(x,y,z);
+							p2 = v(prev_coords[0],prev_coords[1],prev_coords[2]);
+							var seg_len = p1.sub(p2).length();
+							var r1 = point_radii[i-1];
+							var r2 = point_radii[i];
+							if(seg_len < r1 + r2) {
+								prev_coords = [x,y,z];
+								continue;
+							}
+							var line_segment = lineSegmentMesh(prev_coords, [x,y,z], line_size, line_color, lty, r1, r2, true);
+						} else {
+							var line_segment = lineSegmentMesh(prev_coords, [x,y,z], line_size, line_color, lty, 0, 0, true);
+						}
+						prev_coords = [x,y,z];
+						scene.add(line_segment);
+					}
+				}
+				
+				//add hist to scene
 				//could make hist line a tube instead, for more customizability
 				for (var i = 0; i < unfiltered.length; i ++) {
 					var x = xcoords[i];
 					var y = ycoords[i];
 					var z = zcoords[i];
 					var hist = hist_ind == -1 ? default_hist : unfiltered[i][hist_ind];
-					var histcolor = histcolor_ind == -1 ? default_histcolor : unfiltered[i][histcolor_ind];
+					var hist_color = hist_color_ind == -1 ? default_hist_color : unfiltered[i][hist_color_ind];
 					if(hist == 1) {
 						var lineGeo = new THREE.Geometry();
 						lineGeo.vertices.push(
 							v(x, y, 0), v(x, y, z)
 						);
-						var lineMat = new THREE.LineBasicMaterial({color: histcolor,lineWidth: 1, transparent: true, opacity: 0.11});
+						var lineMat = new THREE.LineBasicMaterial({color: hist_color,lineWidth: 1, transparent: true, opacity: 0.11});
 						var line = new THREE.Line(lineGeo, lineMat);
 						line.type = THREE.Lines;
 						histLines.push(line);
@@ -188,7 +234,7 @@
 						lineGeo.vertices.push(
 							v(x, y, -zscale * 1.25), v(x, y, z)
 						);
-						var lineMat = new THREE.LineBasicMaterial({color: histcolor,lineWidth: 1, transparent: true, opacity: 0.11});
+						var lineMat = new THREE.LineBasicMaterial({color: hist_color,lineWidth: 1, transparent: true, opacity: 0.11});
 						var line = new THREE.Line(lineGeo, lineMat);
 						line.type = THREE.Lines;
 						histLines.push(line);
