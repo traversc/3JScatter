@@ -61,7 +61,7 @@ label {
 }
 
 #about {
-	font: 10 arial, sans-serif;
+	font: 10px arial, sans-serif;
 	position:absolute;
 	color:#cccccc;
 	width:205px;
@@ -71,7 +71,7 @@ label {
 	text-align:left;
 }
 #about a {
-	color:#E61D5F;
+	color: #66FF66;
 	text-decoration: none;
 }
 
