@@ -1,122 +1,97 @@
 <html>
 <head>
 <title>3JScatter: 3D scatter plotter</title>
-	<script src="js/three.min_v69.js"></script>  
+	<!--predefined libraries-->
+	<script src="js/three.min.v69.js"></script>  
 	<script src="js/OrbitControls.js"></script>
 	<script src="js/d3.v3.min.js"></script>
 	<script src="js/helvetiker_regular.typeface.js"></script>
 	<script src="js/dat.gui.min.js"></script>
 	<script src="js/jquery-1.11.2.min.js"></script>
-	<script src="js/customDataAndFunctions.js"></script>
+	
+	<!--own code-->
+	<script src="js/_my.functions.js"></script>
+	<script src="js/_my.gui.controls.js"></script>
 	<link type="text/css" href="css/styles.css" rel="stylesheet"/>
-	<!--script src="js/SVGRenderer.js"></script-->
 
 </head>
 	<body>
-		<div id="title">3JScatter: 3D scatter plotter</div>
+		<!--div id="title">3JScatter: 3D scatter plotter</div-->
 		<div id="plotarea"><br>
 		&nbsp;&nbsp;&nbsp;&nbsp;Demo 1: <a href="javascript:demo1();">Tissue sub-type Principal Component Analysis</a><br>
-		&nbsp;&nbsp;&nbsp;&nbsp;Demo 2: <a href="javascript:demo2();">Different shape example</a><br><br>
+		&nbsp;&nbsp;&nbsp;&nbsp;Demo 2: <a href="javascript:demo2();">Different shape example</a><br>
+		&nbsp;&nbsp;&nbsp;&nbsp;Demo 3: <a href="javascript:demo3();">Line plot example (Dow Jones Industrial Average)</a><br><br>
 		</div>
-		<div id ="footer">
+		<div id="footer">
 		<form id="form1">
 			Input Data<br><input type="button" value="Plot Data" onclick="init()"><input type="button" value="Reset" onclick="location.reload();">
 			<textarea id="textinputarea" rows="5"></textarea>
 		</form>
 		</div>
+		<div id="guiContainer">
+		<div id="about"><u><b>3JScatter</b></u> is a highly customizable 3D-plotter written with three.js. <a href="http://traversching.wordpress.com">traversching.wordpress.com</a></div>
+		<div id="savebar"><span class='savebar-button' id="save_settings">Save Settings</span><span class='savebar-button' id="revert_settings">Revert</span></div>
+		
+		
+		</div>
+		
+		
+		
+		
+		
+		
+		
 		<script>
-			var camera, controls, scene, renderer;
+			//var camera, controls, scene, renderer;
 			var points = [];
 			var histLines = [];
 			//var cube_outlines = [];
 			var texts = [];
 			var controls_enabled = false;
 			function demo1() {
-				cam_init_pos = [75,120,150];
+				gui_vars.cam_init_pos_x = 75;
+				gui_vars.cam_init_pos_y = 120;
+				gui_vars.cam_init_pos_z = 150;
 				$('#textinputarea').get(0).value = demostring01;
-				$("#plotarea").empty();
 				init();
 			}
 			function demo2() {
-				cam_init_pos = [20,-10,-150];
+				gui_vars.cam_init_pos_x = 20;
+				gui_vars.cam_init_pos_y = -10;
+				gui_vars.cam_init_pos_z = -150;
 				$('#textinputarea').get(0).value = demostring02;
-				$("#plotarea").empty();
 				init();
 			}
-			
-			//dat.gui variables
-			function exportpng() {
-				window.open(renderer.domElement.toDataURL('image/png'),'screenshot');
-			}	
-			function freeze() {
-				controls_enabled = !controls_enabled;
-				if(controls_enabled && typeof renderer != 'undefined') {
-					animate();
-				}
+			function demo3() {
+				$('#textinputarea').get(0).value = demostring03;
+				init();
 			}
-			function clearSettings() {
-				localStorage.clear();
-				location.reload();
-			}
-			var light_enabled = true;
-			var shadows_enabled = false;
-			var fix_plot_dimensions = false;
-			var fix_axes_loc = false;
-			var axes_origin_x = '0';
-			var axes_origin_y = '0';
-			var axes_origin_z = '0';
-			var gui = new dat.GUI({width:300});
-			gui.remember(this);
-			localStorage.setItem(document.location.href + '.isLocal','true'); //default save to local storage automatically
-			var light_control = gui.add(this, 'light_enabled').name('Add Light');
-			var shadow_control = gui.add(this, 'shadows_enabled').name('Enable Shadows');
-			
-			//axes location
-			var axes_origin_folder = gui.addFolder('Fix Axes Origin');
-			var fix_axes_control = axes_origin_folder.add(this, 'fix_axes_loc').name('Set Origin of Axes');
-			axes_origin_folder.add(this, 'axes_origin_x').name('X');
-			axes_origin_folder.add(this, 'axes_origin_y').name('Y');
-			axes_origin_folder.add(this, 'axes_origin_z').name('Z');
-			axes_origin_folder.open();
-			
-			//plot size controls //plotsize_folder.open();
-			var plotsize_folder = gui.addFolder('Fix Plot Dimensions');
-			var fix_size_control = plotsize_folder.add(this, 'fix_plot_dimensions').name('Fix Plot Size');
-			plotsize_folder.add(this, 'fix_height', 480,1440).name('Plot Height');
-			plotsize_folder.add(this, 'fix_width', 640,2560).name('Plot Width');
-			plotsize_folder.open();
 
-			function reset() { //reload webpage, is there a better way?
-				location.reload();
-			}
-			//gui.add(this, 'freeze').name('Freeze/Unfreeze');
-			gui.add(this, 'exportpng').name('Export as PNG');
-			gui.add(this, 'reset').name('Reset Plot');
-			gui.add(this, 'clearSettings').name('Clear Settings');
-			gui.close();			
+			initControlGui();
+			
 			function init() {
+				$("#plotarea").empty();
 				renderer = new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer: true, alpha: true});
 				//renderer = new THREE.WebGLRenderer();
 				//renderer = new THREE.SVGRenderer({antialias:true});
 				var w,h;
-				if(fix_plot_dimensions) {
-					w = fix_width;
-					h = fix_height;
-				} else {
+				if(gui_vars.fix_width == 'auto') {
 					w = document.getElementById('plotarea').clientWidth;
+				} else {
+					w = parseInt(gui_vars.fix_width);
+				}
+				if(gui_vars.fix_height == 'auto') {
 					h = document.getElementById('plotarea').clientHeight;
+				} else {
+					h = parseInt(gui_vars.fix_height);
 				}
 				renderer.setSize(w, h);
-				renderer.setClearColor(bgcolor, 1.0);
-				if(shadows_enabled) {
-					console.log("shadows");
-					renderer.shadowMapEnabled = true;
-				}
+				renderer.setClearColor(parseInt(gui_vars.bgcolor), 1.0);
+				if(gui_vars.shadows_enabled) {renderer.shadowMapEnabled = true;}
 				renderer.shadowMapType = THREE.PCFSoftShadowMap;
 				renderer.domElement.id = "myrenderer";
 				var plotarea = document.getElementById('plotarea');
 				plotarea.appendChild(renderer.domElement);
-				//controls.addEventListener( 'change', render );
 				scene = new THREE.Scene();
 				camera = new THREE.PerspectiveCamera(45, w / h, 1, 1000);
 				renderer.render(scene,camera);
@@ -137,9 +112,9 @@
 				var line_size_ind = labels.indexOf("line_size");
 				var line_color_ind = labels.indexOf("line_color");
 				
-				var xcoords = unfiltered.map(function(v) {return rescalePosition(v[x_ind],colMin(unfiltered,x_ind),colMax(unfiltered,x_ind),xscale)});
-				var ycoords = unfiltered.map(function(v) {return rescalePosition(v[y_ind],colMin(unfiltered,y_ind),colMax(unfiltered,y_ind),yscale)});
-				var zcoords = unfiltered.map(function(v) {return rescalePosition(v[z_ind],colMin(unfiltered,z_ind),colMax(unfiltered,z_ind),zscale)});
+				var xcoords = unfiltered.map(function(v) {return rescalePosition(v[x_ind],colMin(unfiltered,x_ind),colMax(unfiltered,x_ind),gui_vars.scale_x)});
+				var ycoords = unfiltered.map(function(v) {return rescalePosition(v[y_ind],colMin(unfiltered,y_ind),colMax(unfiltered,y_ind),gui_vars.scale_y)});
+				var zcoords = unfiltered.map(function(v) {return rescalePosition(v[z_ind],colMin(unfiltered,z_ind),colMax(unfiltered,z_ind),gui_vars.scale_z)});
 				
 				//add points to scene
 				var point_radii = []; for (var i = 0; i < unfiltered.length; i++) point_radii[i] = 0; //initialize point radius array
@@ -232,7 +207,7 @@
 					if(hist == 2) {
 						var lineGeo = new THREE.Geometry();
 						lineGeo.vertices.push(
-							v(x, y, -zscale * 1.25), v(x, y, z)
+							v(x, y, -gui_vars.scale_z * 1.25), v(x, y, z)
 						);
 						var lineMat = new THREE.LineBasicMaterial({color: hist_color,lineWidth: 1, transparent: true, opacity: 0.11});
 						var line = new THREE.Line(lineGeo, lineMat);
@@ -243,10 +218,11 @@
 				}
 				
 				//coordinate axes: to do: clean up and make more organized
-				if(fix_axes_loc) {
-					ao_rescaled_x = rescalePosition(parseFloat(axes_origin_x),colMin(unfiltered,x_ind),colMax(unfiltered,x_ind),xscale);
-					ao_rescaled_y = rescalePosition(parseFloat(axes_origin_y),colMin(unfiltered,y_ind),colMax(unfiltered,y_ind),yscale);
-					ao_rescaled_z = rescalePosition(parseFloat(axes_origin_z),colMin(unfiltered,z_ind),colMax(unfiltered,z_ind),zscale);
+				if(gui_vars.axes_origin != 'auto') {
+					var axes_origin = gui_vars.axes_origin.split(",");
+					ao_rescaled_x = rescalePosition(parseFloat(axes_origin[0]),colMin(unfiltered,x_ind),colMax(unfiltered,x_ind),gui_vars.scale_x);
+					ao_rescaled_y = rescalePosition(parseFloat(axes_origin[1]),colMin(unfiltered,y_ind),colMax(unfiltered,y_ind),gui_vars.scale_y);
+					ao_rescaled_z = rescalePosition(parseFloat(axes_origin[2]),colMin(unfiltered,z_ind),colMax(unfiltered,z_ind),gui_vars.scale_z);
 				} else {
 					ao_rescaled_x = 0;
 					ao_rescaled_y = 0;
@@ -254,19 +230,19 @@
 				}
 				var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
 				var lineGeo = new THREE.Geometry();
-				lineGeo.vertices.push(v(xscale * 1.25, ao_rescaled_y, ao_rescaled_z), v(-xscale * 1.25, ao_rescaled_y, ao_rescaled_z));
+				lineGeo.vertices.push(v(gui_vars.scale_x * 1.25, ao_rescaled_y, ao_rescaled_z), v(-gui_vars.scale_x * 1.25, ao_rescaled_y, ao_rescaled_z));
 				var line = new THREE.Line(lineGeo, lineMat);
 				line.type = THREE.Lines;
 				scene.add(line);
 				var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
 				var lineGeo = new THREE.Geometry();
-				lineGeo.vertices.push(v(ao_rescaled_x, yscale * 1.25, ao_rescaled_z), v(ao_rescaled_x, -yscale * 1.25, ao_rescaled_z));
+				lineGeo.vertices.push(v(ao_rescaled_x, gui_vars.scale_y * 1.25, ao_rescaled_z), v(ao_rescaled_x, -gui_vars.scale_y * 1.25, ao_rescaled_z));
 				var line = new THREE.Line(lineGeo, lineMat);
 				line.type = THREE.Lines;
 				scene.add(line);
 				var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
 				var lineGeo = new THREE.Geometry();
-				lineGeo.vertices.push(v(ao_rescaled_x, ao_rescaled_y, zscale * 1.25), v(ao_rescaled_x, ao_rescaled_y, -zscale * 1.25));
+				lineGeo.vertices.push(v(ao_rescaled_x, ao_rescaled_y, gui_vars.scale_z * 1.25), v(ao_rescaled_x, ao_rescaled_y, -gui_vars.scale_z * 1.25));
 				var line = new THREE.Line(lineGeo, lineMat);
 				line.type = THREE.Lines;
 				scene.add(line);
@@ -274,58 +250,58 @@
 				//arrows
 				var triangle = new THREE.Shape();
 				triangle.moveTo(0,0);
-				triangle.lineTo(0.5, -1);
-				triangle.lineTo(-0.5, -1);
+				triangle.lineTo(2, -4);
+				triangle.lineTo(-2, -4);
 				triangle.lineTo(0,0);
 				var geometry = triangle.makeGeometry();
 				var material = new THREE.MeshBasicMaterial({ color: 0x000000 });
 				material.side = THREE.DoubleSide;
 				zarrow = new THREE.Mesh(geometry, material);
-				zarrow.position.set(ao_rescaled_x, ao_rescaled_y, zscale * 1.25);
+				zarrow.position.set(ao_rescaled_x, ao_rescaled_y, gui_vars.scale_z * 1.25);
 				zarrow.rotation.x = Math.PI/2;
 				scene.add( zarrow );
 				xarrow = new THREE.Mesh(geometry, material);
-				xarrow.position.set(xscale * 1.25, ao_rescaled_y, ao_rescaled_z);
+				xarrow.position.set(gui_vars.scale_x * 1.25, ao_rescaled_y, ao_rescaled_z);
 				xarrow.rotation.z = -Math.PI/2;
 				scene.add( xarrow );
 				yarrow = new THREE.Mesh(geometry, material);
-				yarrow.position.set(ao_rescaled_x, xscale * 1.25 + 1, ao_rescaled_z);
+				yarrow.position.set(ao_rescaled_x, gui_vars.scale_x * 1.25, ao_rescaled_z);
 				scene.add( yarrow );
 				
 				// bottom plane for shadows / reflections
 				var geometry = new THREE.PlaneGeometry(10000,10000);
-				var plane_mat = new THREE.MeshBasicMaterial( {color: bgcolor} );
+				var plane_mat = new THREE.MeshBasicMaterial( {color: parseInt(gui_vars.bgcolor)} );
 				var plane = new THREE.Mesh( geometry, plane_mat );
 				plane.receiveShadow = true;
-				plane.position.z = -zscale * 1.25;
+				plane.position.z = -gui_vars.scale_z * 1.25;
 				scene.add( plane );
 
 				//text
 				//text3d.computeBoundingBox();
-				//var centerOffsetx = -0.5 * ( text3d.boundingBox.max.x - text3d.boundingBox.min.x );
+				//var centerOffsetx = -0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
 				//var centerOffsetz = -0.5 * ( text3d.boundingBox.max.z - text3d.boundingBox.min.z );
 				var textMaterial = new THREE.MeshBasicMaterial( { color: 0x000000, overdraw: 0.5 } );
-				var text3d = new THREE.TextGeometry( "x", {size: 2,height: 0,curveSegments: 2,font: "helvetiker"});
-				THREE.GeometryUtils.center( text3d )
-				var x_lab = new THREE.Mesh( text3d, textMaterial );
-				x_lab.position.set(xscale * 1.35, ao_rescaled_y, ao_rescaled_z);
+				text3d = new THREE.TextGeometry( gui_vars.axes_label_x, {size: 8,height: 0,curveSegments: 2,font: "helvetiker"});
+				text3d.center();
+				var x_lab = new THREE.Mesh(text3d, textMaterial);
+				x_lab.position.set(gui_vars.scale_x * 1.30 + text3d.boundingBox.max.x, ao_rescaled_y, ao_rescaled_z);
 				texts.push(x_lab);
 				scene.add( x_lab );
-				var text3d = new THREE.TextGeometry( "y", {size: 2,height: 0,curveSegments: 2,font: "helvetiker"});
+				text3d = new THREE.TextGeometry( gui_vars.axes_label_y, {size: 8,height: 0,curveSegments: 2,font: "helvetiker"});
 				var y_lab = new THREE.Mesh( text3d, textMaterial );
-				THREE.GeometryUtils.center( text3d )
-				y_lab.position.set(ao_rescaled_x, xscale * 1.35, ao_rescaled_z);
+				text3d.center();
+				y_lab.position.set(ao_rescaled_x, gui_vars.scale_x * 1.30 + text3d.boundingBox.max.x, ao_rescaled_z);
 				texts.push(y_lab);
 				scene.add( y_lab );
-				var text3d = new THREE.TextGeometry( "z", {size: 2,height: 0,curveSegments: 2,font: "helvetiker"});
+				text3d = new THREE.TextGeometry( gui_vars.axes_label_z, {size: 8,height: 0,curveSegments: 2,font: "helvetiker"});
 				var z_lab = new THREE.Mesh( text3d, textMaterial );
-				THREE.GeometryUtils.center( text3d )
-				z_lab.position.set(ao_rescaled_x, ao_rescaled_y, zscale * 1.45);
+				text3d.center();
+				z_lab.position.set(ao_rescaled_x, ao_rescaled_y, gui_vars.scale_z * 1.45);
 				texts.push(z_lab);
 				scene.add( z_lab );
 					
 				// lights
-				if(light_enabled) {
+				if(gui_vars.light_enabled) {
 					light = new THREE.SpotLight( 0xcccccc );
 					light.position.set( 0,0, 1000);
 					light.castShadow = true;
@@ -334,11 +310,11 @@
 					scene.add( light );
 				}
 				
-				camera.position.z = cam_init_pos[0];
-				camera.position.x = cam_init_pos[1];
-				camera.position.y = cam_init_pos[2];
-				camera.up = v( 0, 0, 1 );
-				controls = new THREE.OrbitControls( camera );
+				camera.position.z = gui_vars.cam_pos_x;
+				camera.position.x = gui_vars.cam_pos_y;
+				camera.position.y = gui_vars.cam_pos_z;
+				camera.up = v(0,0,1);
+				controls = new THREE.OrbitControls(camera, renderer.domElement);
 				controls.damping = 0.2;
 				
 				controls_enabled = true;

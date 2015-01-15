@@ -1,17 +1,26 @@
+body {
+	background-color: #FFFFFF;
+	margin: 0;
+	padding: 0;
+	overflow: hidden;
+}
+
+
 label {
     float: left;
 }
 
 #textinputarea {
     width: 100%;
-	height: calc(100% - 43px);
+	height: calc(100% - 41px);
 }
 
 #footer {
     position: fixed;
 	z-index: 0;
-    bottom: 10px;
-    width: calc(100% - 20px);
+    bottom: 2px;
+	left: 2px;
+    width: calc(100% - 225px);
 	height: 300px;
     color: #042E64;
     font-size: 16px;
@@ -19,16 +28,20 @@ label {
     font-weight: bold;
     text-shadow: 0 1px 0 #84BAFF;
     box-shadow: 0 0 15px #00214B;
-	padding-left: 1px; 
-	padding-right: 1px; 
+	padding-left: 0px; 
+	padding-top: 0px; 
+	padding-right: 0px; 
+	padding-bottom: 0px; 
 }
 
 #plotarea {
     position: absolute;
 	z-index: 0;
-    width: calc(100% - 18px);
-	height: calc(100% - 370px);
-	top: 20px;
+    width: calc(100% - 225px);
+	height: calc(100% - 310px);
+	top: 2px;
+    bottom: 2px;
+	left: 2px;
 	background: #FFFFFF;
     color: #042E64;
     font-size: 16px;
@@ -36,22 +49,61 @@ label {
     font-weight: bold;
     text-shadow: 0 1px 0 #84BAFF;
     box-shadow: 0 0 15px #00214B;
-	padding: 0;
-	margin-top: 20;
+	padding: 0px;
+}
+
+#guiContainer { 
+	position: absolute;
+	z-index: 1;
+	right: -15px;
+	height: 100%;
+	background: #222222;
+}
+
+#about {
+	font: 10 arial, sans-serif;
+	position:absolute;
+	color:#cccccc;
+	width:205px;
+	height:32px;
+	padding: 10px;
+	right:15px;
+	text-align:left;
+}
+#about a {
+	color:#E61D5F;
+	text-decoration: none;
 }
 
 
-#title {
-    position: fixed;
-	z-index: -1;
-    width: calc(100% - 18px);
-	height: 20px;
-	/* background: #D0E5FF; */
-    color: #042E64;
-    font-size: 16px;
-    font-family: sans-serif;
-    font-weight: bold;
-    text-shadow: 0 1px 0 #84BAFF;
-    box-shadow: 0 0 15px #00214B;
-	margin-bottom: 10px;
+#savebar {
+	background: #222222;
+	border: 0;
+	position:absolute;
+	width:210px;
+	height:27px;
+	top: 50px;
+	padding: 0px;
+	right:15px;
+	padding-right: 5px;
+	text-align:center;
 }
+
+.savebar-button {
+	font: 10px 'Lucida Console', sans-serif;
+	margin-top: 1px;
+	margin: 2.5px;
+	border-radius: 2px;
+	line-height: 27px;
+	padding: 4px 4px 5px 4px;
+	background: #c5bdad;
+	color: #fff;
+	text-shadow: 0 1px 0 #b0a58f;
+	box-shadow: 0 -1px 0 #b0a58f;
+	cursor: pointer;
+}
+
+.savebar-button:hover {
+	background-color: #b5ad9d;
+}
+
