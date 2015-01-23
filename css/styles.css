@@ -44,26 +44,38 @@ label {
 	left: 2px;
 	background: #FFFFFF;
     color: #042E64;
-    font-size: 16px;
-    font-family: sans-serif;
-    font-weight: bold;
-    text-shadow: 0 1px 0 #84BAFF;
+    font: 16px 'Lucida Console', sans-serif;
     box-shadow: 0 0 15px #00214B;
-	padding: 0px;
+	padding-left: 0px; 
+	padding-top: 0px; 
+	padding-right: 0px; 
+	padding-bottom: 0px; 
+}
+
+#notice {
+	position: absolute;
+	bottom: 0px;
+	right: 0px;
+	font: 8px 'Lucida Console', sans-serif;
+	margin-top: 1px;
+	margin: 2.5px;
+	border-radius: 2px;
+	line-height: 27px;
+	color: #333;
 }
 
 #guiContainer { 
 	position: absolute;
-	z-index: 1;
+	z-index: 0;
 	right: -15px;
 	height: 100%;
-	background: #222222;
+	background: #eee;
 }
 
 #about {
 	font: 10px arial, sans-serif;
 	position:absolute;
-	color:#cccccc;
+	color:#111;
 	width:205px;
 	height:35px;
 	padding: 10px;
@@ -71,13 +83,13 @@ label {
 	text-align:left;
 }
 #about a {
-	color: #66FF66;
+	color: #22bbff;
 	text-decoration: none;
 }
 
 
 #savebar {
-	background: #222222;
+	background: #eee;
 	border: 0;
 	position:absolute;
 	width:210px;
@@ -96,7 +108,7 @@ label {
 	border-radius: 2px;
 	line-height: 27px;
 	padding: 4px 4px 5px 4px;
-	background: #c5bdad;
+	background: #b5ad9d;
 	color: #fff;
 	text-shadow: 0 1px 0 #b0a58f;
 	box-shadow: 0 -1px 0 #b0a58f;
@@ -104,6 +116,70 @@ label {
 }
 
 .savebar-button:hover {
-	background-color: #b5ad9d;
+	background-color: #a59d8d;
 }
 
+/* http://brm.io/dat-gui-light-theme/ 
+light theme*/
+.dg.main.taller-than-window .close-button {
+    border-top: 1px solid #ddd;
+}
+
+.dg.main .close-button {
+    background-color: #ccc;
+}
+ 
+.dg.main .close-button:hover {
+    background-color: #ddd;
+}
+
+.dg {
+    color: #555;
+    text-shadow: none !important;
+}
+
+.dg.main::-webkit-scrollbar {
+    background: #fafafa;
+}
+
+.dg.main::-webkit-scrollbar-thumb {
+    background: #bbb;
+}
+ 
+.dg li:not(.folder) {
+    background: #fafafa;
+    border-bottom: 1px solid #aaa;
+}
+ 
+.dg li.save-row .button {
+    text-shadow: none !important;
+}
+
+.dg li.title {
+    background: #cccccc url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 10px no-repeat;
+}
+
+.dg .cr.function:hover,.dg .cr.boolean:hover {
+    background: #fff;
+}
+ 
+.dg .c input[type=text] {
+    background: #f1f1f1;
+}
+ 
+.dg .c input[type=text]:hover {
+    background: #eee;
+}
+ 
+.dg .c input[type=text]:focus {
+    background: #eee;
+    color: #555;
+}
+ 
+.dg .c .slider {
+    background: #e9e9e9;
+}
+
+.dg .c .slider:hover {
+    background: #eee;
+}

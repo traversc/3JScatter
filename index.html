@@ -3,6 +3,7 @@
 <title>3JScatter: 3D scatter plotter</title>
 	<!--predefined libraries-->
 	<script src="js/three.min.v69.js"></script>  
+	<script src="js/WebGLDetector.js"></script>  
 	<script src="js/OrbitControls.js"></script>
 	<script src="js/d3.v3.min.js"></script>
 	<script src="js/helvetiker_regular.typeface.js"></script>
@@ -17,10 +18,11 @@
 </head>
 	<body>
 		<!--div id="title">3JScatter: 3D scatter plotter</div-->
-		<div id="plotarea"><br>
-		&nbsp;&nbsp;&nbsp;&nbsp;Demo 1: <a href="javascript:demo1();">Tissue sub-type Principal Component Analysis</a><br>
-		&nbsp;&nbsp;&nbsp;&nbsp;Demo 2: <a href="javascript:demo2();">Different shape example</a><br>
-		&nbsp;&nbsp;&nbsp;&nbsp;Demo 3: <a href="javascript:demo3();">Line plot example (Dow Jones Industrial Average)</a><br><br>
+		<div id="plotarea">
+		Demo 1: <a href="javascript:demo1();">Tissue sub-type Principal Component Analysis</a><br>
+		Demo 2: <a href="javascript:demo2();">Different shape example</a><br>
+		Demo 3: <a href="javascript:demo3();">Line plot example (Dow Jones Industrial Average)</a><br><br>
+		<span id="notice">This page uses Javascript.  Please use the latest version of Chrome or Firefox.</span>
 		</div>
 		<div id="footer">
 		<form id="form1">
@@ -31,8 +33,6 @@
 		<div id="guiContainer">
 		<div id="about"><u><b>3JScatter</b></u> is a highly customizable 3D-plotter written with three.js. <a href="http://traversching.wordpress.com">traversching.wordpress.com</a></div>
 		<div id="savebar"><span class='savebar-button' id="save_settings">Save Settings</span><span class='savebar-button' id="revert_settings">Revert</span></div>
-		
-		
 		</div>
 		
 		
@@ -43,11 +43,11 @@
 		
 		<script>
 			//var camera, controls, scene, renderer;
-			var points = [];
-			var histLines = [];
+			points = [];
+			histLines = [];
 			//var cube_outlines = [];
-			var texts = [];
-			var controls_enabled = false;
+			texts = [];
+			controls_enabled = false;
 			function demo1() {
 				gui_vars.cam_init_pos_x = 75;
 				gui_vars.cam_init_pos_y = 120;
@@ -71,6 +71,11 @@
 			
 			function init() {
 				$("#plotarea").empty();
+				if ( ! Detector.webgl ) {
+					var parameters = {parent: $("#plotarea")[0], id : "error"};
+					Detector.addGetWebGLMessage(parameters);
+					return;
+				}
 				renderer = new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer: true, alpha: true});
 				//renderer = new THREE.WebGLRenderer();
 				//renderer = new THREE.SVGRenderer({antialias:true});
@@ -95,96 +100,100 @@
 				scene = new THREE.Scene();
 				camera = new THREE.PerspectiveCamera(45, w / h, 1, 1000);
 				renderer.render(scene,camera);
-				var text = document.getElementById('textinputarea').value; 
-				var unfiltered = d3.csv.parseRows(text);			
-				var labels = unfiltered[0];
-				unfiltered.shift(); //remove first element (header)		
-				var x_ind = labels.indexOf("x");
-				var y_ind = labels.indexOf("y");
-				var z_ind = labels.indexOf("z");
-				var size_ind = labels.indexOf("size");
-				var hist_ind = labels.indexOf("hist");
-				var pch_ind = labels.indexOf("pch");
-				var color_ind = labels.indexOf("color");
-				var hist_color_ind = labels.indexOf("hist_color");
-				var outline_color_ind = labels.indexOf("outline_color");
-				var lty_ind = labels.indexOf("lty");
-				var line_size_ind = labels.indexOf("line_size");
-				var line_color_ind = labels.indexOf("line_color");
 				
-				var xcoords = unfiltered.map(function(v) {return rescalePosition(v[x_ind],colMin(unfiltered,x_ind),colMax(unfiltered,x_ind),gui_vars.scale_x)});
-				var ycoords = unfiltered.map(function(v) {return rescalePosition(v[y_ind],colMin(unfiltered,y_ind),colMax(unfiltered,y_ind),gui_vars.scale_y)});
-				var zcoords = unfiltered.map(function(v) {return rescalePosition(v[z_ind],colMin(unfiltered,z_ind),colMax(unfiltered,z_ind),gui_vars.scale_z)});
 				
-				//add points to scene
-				var point_radii = []; for (var i = 0; i < unfiltered.length; i++) point_radii[i] = 0; //initialize point radius array
-				for (var i = 0; i < unfiltered.length; i ++) {
-					var size = size_ind == -1 ? default_size : unfiltered[i][size_ind];
-					var pch = size_ind == -1 ? default_pch : unfiltered[i][pch_ind];
-					var x = xcoords[i];
-					var y = ycoords[i];
-					var z = zcoords[i];
-					var color = color_ind == -1 ? default_color : unfiltered[i][color_ind];
-					var outline_color = outline_color_ind == -1 ? default_outline_color : unfiltered[i][outline_color_ind];
-					var point = pointMesh(pch, size, color, outline_color);
-					
-					//compute bounding boxes
-					if(point instanceof THREE.Mesh) {
-						var geom = point.geometry;
-						geom.computeBoundingSphere();
-						point_radii[i] = geom.boundingSphere.radius;
-					} else { //instanceof THREE.Object3D
-						for (var j = 0; j < point.children.length; j ++) {
-							point.children[j].geometry.computeBoundingSphere();
-							if(point.children[j].geometry.boundingSphere.radius > point_radii[i]) {
-								point_radii[i] = point.children[j].geometry.boundingSphere.radius;
+				//point: x,y,z,pch,color,size,outline_color,hist,hist_color,euler1,euler2,euler3
+				//line: x,y,z,lty,line_size,line_color,pch,color,size,outline_color,hist,hist_color,,euler1,euler2,euler3
+				//text: x,y,z,text,color,size
+				//point rotations not yet implemented
+				
+				var input = document.getElementById('textinputarea').value;
+				var input_array = input.split("\n");
+				var sre = /^series/;
+				var series_inds = input_array.reduce(function(a, e, i) {
+					if (e.search(sre) > -1)
+						a.push(i);
+					return a;
+				}, []);
+				series_inds.push(input_array.length);
+				var series_array = [];
+				var all_xcoords = [];
+				var all_ycoords = [];
+				var all_zcoords = [];
+				series_inds.reduce(function(start, end) {
+					var series = d3.csv.parse(input_array.slice(start,end).join("\n"));
+					for(var i=0; i<series.length;i++) {
+						all_xcoords.push(series[i].x);
+						all_ycoords.push(series[i].y);
+						all_zcoords.push(series[i].z);
+					}
+					series_array.push(series);
+					return end;
+				})
+				var xlim = [Math.min.apply(null,all_xcoords),Math.max.apply(null,all_xcoords)];
+				var ylim = [Math.min.apply(null,all_ycoords),Math.max.apply(null,all_ycoords)];
+				var zlim = [Math.min.apply(null,all_zcoords),Math.max.apply(null,all_zcoords)];
+				
+				for(var i=0; i<series_array.length;i++) {
+					var series = series_array[i];
+					var point_radii = []; for (var i = 0; i < series.length; i++) point_radii[i] = 0; //initialize point radius array
+					//add points to scene
+					for(var i=0; i<series.length;i++) {
+						var size = typeof series[i].size == "undefined" ? default_size : series[i].size;
+						var pch = typeof series[i].pch == "undefined" ? default_pch : series[i].pch;
+						var color = typeof series[i].color == "undefined" ? default_color : series[i].color;
+						var outline_color = typeof series[i].outline_color == "undefined" ? default_outline_color : series[i].outline_color;
+						var point = pointMesh(pch, size, color, outline_color);
+						
+						//compute bounding boxes
+						if(point instanceof THREE.Mesh) {
+							var geom = point.geometry;
+							geom.computeBoundingSphere();
+							point_radii[i] = geom.boundingSphere.radius;
+						} else { //instanceof THREE.Object3D
+							for (var j = 0; j < point.children.length; j ++) {
+								point.children[j].geometry.computeBoundingSphere();
+								if(point.children[j].geometry.boundingSphere.radius > point_radii[i]) {
+									point_radii[i] = point.children[j].geometry.boundingSphere.radius;
+								}
 							}
 						}
+						//point_radii[i] = point_radii[i] * 1.05;
+						point.position.x = rescalePosition(series[i].x,xlim[0],xlim[1],gui_vars.scale_x);
+						point.position.y = rescalePosition(series[i].y,ylim[0],ylim[1],gui_vars.scale_y);
+						point.position.z = rescalePosition(series[i].z,zlim[0],zlim[1],gui_vars.scale_z);
+						point.castShadow = true;
+						scene.add(point);
 					}
-					point_radii[i] = point_radii[i] * 1.05;
-					
-					point.position.x = x;
-					point.position.y = y;
-					point.position.z = z;
-					point.castShadow = true;
-					scene.add(point);
-				}
-				
-				//add line segments to scene
-				if(lty_ind != -1) {
-					var prev_coords = undefined;
-					for (var i = 0; i < unfiltered.length; i ++) {
-						var x = xcoords[i];
-						var y = ycoords[i];
-						var z = zcoords[i];
+					//add line segments to scene
+					var prev_coords;
+					for(var i=0; i<series.length;i++) {
+						x = rescalePosition(series[i].x,xlim[0],xlim[1],gui_vars.scale_x);
+						y = rescalePosition(series[i].y,ylim[0],ylim[1],gui_vars.scale_y);
+						z = rescalePosition(series[i].z,zlim[0],zlim[1],gui_vars.scale_z);
 						if(typeof prev_coords == "undefined" || lty == "0") {
 							prev_coords = [x,y,z];
 							continue;
 						}
-						var lty = unfiltered[i][lty_ind] != "" ? unfiltered[i][lty_ind] : default_lty;
-						var line_size = line_size_ind == -1 ? default_line_size : unfiltered[i][line_size_ind];
-						line_size = line_size != "" ? line_size : default_line_size;
-						var line_color = line_color_ind == -1 ? default_line_color : unfiltered[i][line_color_ind];
-						line_color = line_color != "" ? line_color : default_line_color;
-						if(lty == "2") {
-							p1 = v(x,y,z);
-							p2 = v(prev_coords[0],prev_coords[1],prev_coords[2]);
-							var seg_len = p1.sub(p2).length();
-							var r1 = point_radii[i-1];
-							var r2 = point_radii[i];
-							if(seg_len < r1 + r2) {
-								prev_coords = [x,y,z];
-								continue;
-							}
-							var line_segment = lineSegmentMesh(prev_coords, [x,y,z], line_size, line_color, lty, r1, r2, true);
-						} else {
-							var line_segment = lineSegmentMesh(prev_coords, [x,y,z], line_size, line_color, lty, 0, 0, true);
+						var lty = typeof series[i].lty == "undefined" ? default_lty : series[i].lty;
+						var line_size = typeof series[i].line_size == "undefined" ? default_line_size : series[i].line_size;
+						var line_color = typeof series[i].line_color == "undefined" ? default_line_color : series[i].line_color;
+						var p1 = v(x,y,z);
+						var p2 = v(prev_coords[0],prev_coords[1],prev_coords[2]);
+						var seg_len = p1.sub(p2).length();
+						var r1 = lty == "1" ? point_radii[i-1] : point_radii[i-1] * 1.05;
+						var r2 = lty == "1" ? point_radii[i] : point_radii[i] * 1.05;
+						if(seg_len < r1 + r2) {
+							prev_coords = [x,y,z];
+							continue;
 						}
+						var line_segment = lineSegmentMesh(prev_coords, [x,y,z], line_size, line_color, lty, r1, r2, true);
 						prev_coords = [x,y,z];
 						scene.add(line_segment);
 					}
 				}
 				
+				/*
 				//add hist to scene
 				//could make hist line a tube instead, for more customizability
 				for (var i = 0; i < unfiltered.length; i ++) {
@@ -215,14 +224,14 @@
 						histLines.push(line);
 						scene.add(line);
 					}
-				}
+				}*/
 				
 				//coordinate axes: to do: clean up and make more organized
 				if(gui_vars.axes_origin != 'auto') {
 					var axes_origin = gui_vars.axes_origin.split(",");
-					ao_rescaled_x = rescalePosition(parseFloat(axes_origin[0]),colMin(unfiltered,x_ind),colMax(unfiltered,x_ind),gui_vars.scale_x);
-					ao_rescaled_y = rescalePosition(parseFloat(axes_origin[1]),colMin(unfiltered,y_ind),colMax(unfiltered,y_ind),gui_vars.scale_y);
-					ao_rescaled_z = rescalePosition(parseFloat(axes_origin[2]),colMin(unfiltered,z_ind),colMax(unfiltered,z_ind),gui_vars.scale_z);
+					ao_rescaled_x = rescalePosition(parseFloat(axes_origin[0]),xlim[0],xlim[1],gui_vars.scale_x);
+					ao_rescaled_y = rescalePosition(parseFloat(axes_origin[1]),ylim[0],ylim[1],gui_vars.scale_y);
+					ao_rescaled_z = rescalePosition(parseFloat(axes_origin[2]),zlim[0],zlim[1],gui_vars.scale_z);
 				} else {
 					ao_rescaled_x = 0;
 					ao_rescaled_y = 0;
