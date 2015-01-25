@@ -48,7 +48,7 @@ function clearSettings() {
 
 function initControlGui() {
 	gui = new dat.GUI({width: 220});
-	$('#guiContainer')[0].appendChild(gui.domElement);
+	$('#gui_sidebar')[0].appendChild(gui.domElement);
 	$('.dg.main.a')[0].style.marginTop = '80px';
 	$('.dg.main.a').children()[0].style.display = 'none'; //resize button - no ID or class, should probably check CSS attributes in case it is no longer the first element
 	$('.close-button')[0].style.display = 'none'; //close control button

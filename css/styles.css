@@ -16,40 +16,91 @@ label {
 }
 
 #footer {
-    position: fixed;
+    position: absolute;
 	z-index: 0;
     bottom: 2px;
 	left: 2px;
-    width: calc(100% - 225px);
-	height: 300px;
-    color: #042E64;
-    font-size: 16px;
-    font-family: sans-serif;
-    font-weight: bold;
-    text-shadow: 0 1px 0 #84BAFF;
-    box-shadow: 0 0 15px #00214B;
-	padding-left: 0px; 
-	padding-top: 0px; 
-	padding-right: 0px; 
-	padding-bottom: 0px; 
+    width: calc(100% - 229px);
+	height: 330px;
+    box-shadow: 5px 5px 15px #20416B;
+	padding: 2px 2px 2px 2px; 
+    border-radius: 6px;
+	
 }
 
 #plotarea {
     position: absolute;
 	z-index: 0;
     width: calc(100% - 225px);
-	height: calc(100% - 310px);
+	height: calc(100% - 340px);
 	top: 2px;
     bottom: 2px;
 	left: 2px;
 	background: #FFFFFF;
     color: #042E64;
-    font: 16px 'Lucida Console', sans-serif;
-    box-shadow: 0 0 15px #00214B;
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-weight: bold;
+	font-size: 16px;
+    /*box-shadow: 0 0 15px #00214B;*/
 	padding-left: 0px; 
 	padding-top: 0px; 
 	padding-right: 0px; 
 	padding-bottom: 0px; 
+}
+
+
+#datasheet_container {
+	position: absolute;
+	right: 2px;
+	top: 2px;
+	bottom: 2px;
+	width: calc(100% - 200px);
+}
+
+#input_container {
+	position: relative;
+	left: 0px;
+	top: 50%;
+	transform: translateY(-50%);
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-weight: bold;
+	font-size: 16px;
+	line-height: 20px;
+	letter-spacing: 1px;
+	color: #555;
+}
+
+.input_controls {
+	width:160px;
+	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-weight: bold;
+	font-size: 12px;
+	line-height: 20px;
+	letter-spacing: 1px;
+	color: rgb(149, 149, 149);
+	padding: 10px;
+	margin: 5px;
+	border-bottom-color: rgb(221, 221, 221);
+	border-bottom-left-radius: 4px;
+	border-bottom-right-radius: 4px;
+	border-bottom-style: solid;
+	border-bottom-width: 1px;
+	border-left-color: rgb(221, 221, 221);
+	border-left-style: solid;
+	border-left-width: 1px;
+	border-right-color: rgb(221, 221, 221);
+	border-right-style: solid;
+	border-right-width: 1px;
+	border-top-color: rgb(221, 221, 221);
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+	border-top-style: solid;
+	border-top-width: 1px;
+}
+
+.handsontable {
+    overflow: auto;
+    font: 9px 'Lucida Console', sans-serif;
 }
 
 #notice {
@@ -64,7 +115,7 @@ label {
 	color: #333;
 }
 
-#guiContainer { 
+#gui_sidebar { 
 	position: absolute;
 	z-index: 0;
 	right: -15px;
@@ -155,9 +206,13 @@ light theme*/
     text-shadow: none !important;
 }
 
+/* image convert: http://b64.io/ */
 .dg li.title {
-    background: #cccccc url(data:image/gif;base64,R0lGODlhBQAFAJEAAP////Pz8////////yH5BAEAAAIALAAAAAAFAAUAAAIIlI+hKgFxoCgAOw==) 6px 10px no-repeat;
+    background: #ddd url(data:image/gif;base64,R0lGODlhBQAFAPcAAAAAAEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAP8ALAAAAAAFAAUAAAgQAP8JHEgwgEGD/w4ODCAwIAA7) 6px 10px no-repeat;
 }
+
+.dg .closed li.title {
+background-image: url(data:image/gif;base64,R0lGODlhBQAFAPcAAAAAAEBAQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAACH5BAEAAP8ALAAAAAAFAAUAAAgQAP/9CyBQYACCBg8mLIgwIAA7); }
 
 .dg .cr.function:hover,.dg .cr.boolean:hover {
     background: #fff;

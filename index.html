@@ -1,7 +1,10 @@
+<!DOCTYPE html>
 <html>
 <head>
 <title>3JScatter: 3D scatter plotter</title>
 	<!--predefined libraries-->
+	<link rel="stylesheet" href="css/bootstrap.css">
+	<link rel="stylesheet" href="css/bootstrap-theme.css">
 	<script src="js/three.min.v69.js"></script>  
 	<script src="js/WebGLDetector.js"></script>  
 	<script src="js/OrbitControls.js"></script>
@@ -9,10 +12,15 @@
 	<script src="js/helvetiker_regular.typeface.js"></script>
 	<script src="js/dat.gui.min.js"></script>
 	<script src="js/jquery-1.11.2.min.js"></script>
+	<script src="js/handsontable.full.min.js"></script>
+	<link rel="stylesheet" href="css/handsontable.full.min.css">
+
+	
 	
 	<!--own code-->
 	<script src="js/tc.functions.js"></script>
 	<script src="js/tc.gui.controls.js"></script>
+	<script src="js/tc.data.input.js"></script>
 	<link type="text/css" href="css/styles.css" rel="stylesheet"/>
 
 </head>
@@ -25,14 +33,34 @@
 		<span id="notice">This page uses Javascript.  Please use the latest version of Chrome or Firefox.</span>
 		</div>
 		<div id="footer">
-		<form id="form1">
-			Input Data<br><input type="button" value="Plot Data" onclick="init()"><input type="button" value="Reset" onclick="location.reload();">
-			<textarea id="textinputarea" rows="5"></textarea>
-		</form>
+			<div id="input_container">
+				Controls
+				<div id="add_series_form" class="input_controls">
+					ADD DATA SERIES<br>
+					<button type="button" class="btn btn-block btn-default btn-sm" onclick="init()">Add Points</button>
+					<button type="button" class="btn btn-block btn-default btn-sm" onclick="init()">Add Lines</button>
+					<button type="button" class="btn btn-block btn-default btn-sm" onclick="init()">Add Text</button>
+					
+					<!--textarea id="textinputarea" rows="5"></textarea-->
+				</div>
+				<div id="plot_data_form" class="input_controls">
+					PLOT CONTROLS<br>
+					<button type="button" class="btn btn-block btn-default btn-xs" onclick="init()">Plot Data</button>
+					<button type="button" class="btn btn-block btn-default btn-xs" onclick="location.reload();">Reset</button>
+					<button type="button" class="btn btn-block btn-default btn-xs" onclick="location.reload();">Export PNG</button><br>
+					<button type="button" class="btn btn-block btn-default btn-xs btn-info">Clear Settings</button>
+					<!--textarea id="textinputarea" rows="5"></textarea-->
+				</div>
+			</div>
+			<div id="datasheet_container"><div id="datasheet" class="handsontable"></div></div>
 		</div>
-		<div id="guiContainer">
+		<div id="gui_sidebar">
 		<div id="about"><u><b>3JScatter</b></u> is a highly customizable 3D-plotter written with three.js. <a href="http://traversching.wordpress.com">traversching.wordpress.com</a></div>
-		<div id="savebar"><span class='savebar-button' id="save_settings">Save Settings</span><span class='savebar-button' id="revert_settings">Revert</span></div>
+		<div id="savebar">
+		<div class="btn-group btn-group-xs" role="group"><button type="button" class="btn btn-default">Save Settings</button>
+		<button type="button" class="btn btn-default">Revert</button></div>
+		
+		<!--span class='savebar-button' id="save_settings">Save Settings</span><span class='savebar-button' id="revert_settings">Revert</span--></div>
 		</div>
 		
 		
@@ -42,6 +70,9 @@
 		
 		
 		<script>
+		
+			initControlGui();
+			initDatasheet();
 			//var camera, controls, scene, renderer;
 			points = [];
 			histLines = [];
@@ -67,7 +98,6 @@
 				init();
 			}
 
-			initControlGui();
 			
 			function init() {
 				$("#plotarea").empty();
@@ -102,8 +132,8 @@
 				renderer.render(scene,camera);
 				
 				
-				//point: x,y,z,pch,color,size,outline_color,hist,hist_color,euler1,euler2,euler3
-				//line: x,y,z,lty,line_size,line_color,pch,color,size,outline_color,hist,hist_color,,euler1,euler2,euler3
+				//point: x,y,z,pch,color,size,outline_color,hist,hist_color,euler_x,euler_y,euler_z
+				//line: x,y,z,lty,line_size,line_color,pch,color,size,outline_color,hist,hist_color,euler_x,euler_y,euler_z
 				//text: x,y,z,text,color,size
 				//point rotations not yet implemented
 				
@@ -116,7 +146,7 @@
 					return a;
 				}, []);
 				series_inds.push(input_array.length);
-				var series_array = [];
+				series_array = [];
 				var all_xcoords = [];
 				var all_ycoords = [];
 				var all_zcoords = [];
@@ -159,23 +189,31 @@
 							}
 						}
 						//point_radii[i] = point_radii[i] * 1.05;
+						
+						var euler_x = typeof series[i].euler_x == "undefined" || series[i].euler_x == "" ? 0 : series[i].euler_x * Math.PI/180;
+						var euler_y = typeof series[i].euler_y == "undefined" || series[i].euler_y == "" ? 0 : series[i].euler_y * Math.PI/180;
+						var euler_z = typeof series[i].euler_z == "undefined" || series[i].euler_z == "" ? 0 : series[i].euler_z * Math.PI/180;
+						point.applyMatrix(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(euler_x,euler_y,euler_z)));
+						
 						point.position.x = rescalePosition(series[i].x,xlim[0],xlim[1],gui_vars.scale_x);
 						point.position.y = rescalePosition(series[i].y,ylim[0],ylim[1],gui_vars.scale_y);
 						point.position.z = rescalePosition(series[i].z,zlim[0],zlim[1],gui_vars.scale_z);
+						//console.log(point.rotation);
+						//todo: check if shadows enabled
 						point.castShadow = true;
 						scene.add(point);
 					}
 					//add line segments to scene
 					var prev_coords;
 					for(var i=0; i<series.length;i++) {
+						var lty = typeof series[i].lty == "undefined" ? default_lty : series[i].lty;
 						x = rescalePosition(series[i].x,xlim[0],xlim[1],gui_vars.scale_x);
 						y = rescalePosition(series[i].y,ylim[0],ylim[1],gui_vars.scale_y);
 						z = rescalePosition(series[i].z,zlim[0],zlim[1],gui_vars.scale_z);
-						if(typeof prev_coords == "undefined" || lty == "0") {
+						if(typeof prev_coords == "undefined" || lty == "0" || lty == "") {
 							prev_coords = [x,y,z];
 							continue;
 						}
-						var lty = typeof series[i].lty == "undefined" ? default_lty : series[i].lty;
 						var line_size = typeof series[i].line_size == "undefined" ? default_line_size : series[i].line_size;
 						var line_color = typeof series[i].line_color == "undefined" ? default_line_color : series[i].line_color;
 						var p1 = v(x,y,z);
