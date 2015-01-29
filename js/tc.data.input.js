@@ -1,22 +1,25 @@
-var datasheet_element, hot_table,datasheet_container_element;
+var datasheet_element,hot_table,datasheet_container_element;
 
 function initDatasheet() {
-datasheet_container_element = document.getElementById('datasheet_container');
-datasheet_element = document.getElementById('datasheet');
+datasheet_container_element = $('#datasheet_container')[0];
+datasheet_element = $('#datasheet')[0];
 hot_table = new Handsontable(datasheet_element,{
-  data: demoarray03,
+  data: d3.csv.parseRows(demostring02),
   stretchH: 'all',
   colWidths: 30,
   rowHeaders: true,
   colHeaders: true,
+  renderAllRows: true,
+  maxRows: 1000,
+  maxCols: 20,
   fixedColumnsLeft: 0,
   fixedRowsTop: 0,
   minSpareRows: 1,
   contextMenu: true,
   manualColumnResize: true,
-  manualRowResize: true,
+  manualRowResize: false,
   minSpareRows: 1,
-  persistentState: true
+  persistentState: false
 });
 calculateSize();
 Handsontable.Dom.addEvent(window, 'resize', calculateSize);
@@ -35,17 +38,10 @@ function calculateSize() {
 }
 
 function table2csv() {
-        for (var i = 0; i < instance.countRows(); i++) {
-            var row = [];
-            for (var h in headers) {
-                var prop = instance.colToProp(h)
-                var value = instance.getDataAtRowProp(i, prop)
-                row.push(value)
-            }
-            
-            csv += row.join(";")
-            csv += "\n";
-        }
-        
-        return csv;
-    }
+	var csv = "";
+	for (var i = 0; i < hot_table.countRows()-1; i++) {
+		csv += hot_table.getDataAtRow(i).join(",");
+		csv += "\n";
+	}
+	return csv;
+}

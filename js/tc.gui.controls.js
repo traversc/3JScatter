@@ -67,7 +67,7 @@ function initControlGui() {
 
 	//.onChange(function(newValue) {saveGuiState();});
 	//axes controls
-	gui.add(gui_vars, 'bgcolor').name('Background Color');
+	gui.add(gui_vars, 'bgcolor').name('Bckgrnd Color');
 	axes_folder = gui.addFolder('Axes Controls');
 		axes_origin_control = axes_folder.add(gui_vars, 'axes_origin').name('Origin Location (x,y,z)');
 		axes_label_folder = axes_folder.addFolder('Axes Labels');
@@ -94,10 +94,12 @@ function initControlGui() {
 		camera_loc_folder.add(gui_vars, 'cam_pos_x').name('Camera Y position');
 		camera_loc_folder.add(gui_vars, 'cam_pos_x').name('Camera Z position');
 	gui.add(gui_vars, 'light_enabled').name('Add Light');
-	gui.add(gui_vars, 'shadows_enabled').name('Enable Shadows');
+	gui.add(gui_vars, 'shadows_enabled').name('Add Shadows');
 	
+
+	gui.add(this, 'init').name('Plot Data');
+	gui.add(this, 'reset').name('Reset');
 	gui.add(this, 'exportpng').name('Export as PNG');
-	gui.add(this, 'reset').name('Reset Plot');
 	gui.add(this, 'clearSettings').name('Clear Settings');
 	//temp - open folders
 	for(var f in gui.__folders) {
