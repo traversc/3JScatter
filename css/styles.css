@@ -5,7 +5,6 @@ body {
 	overflow: hidden;
 }
 
-
 label {
     float: left;
 }
@@ -38,7 +37,7 @@ label {
 	left: 2px;
 	background: #FFFFFF;
     color: #042E64;
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
 	font-weight: bold;
 	font-size: 16px;
     /*box-shadow: 0 0 15px #00214B;*/
@@ -52,17 +51,18 @@ label {
 #datasheet_container {
 	position: absolute;
 	right: 2px;
-	top: 2px;
+	top: 34px; /*2 px with no pagination*/
 	bottom: 2px;
 	width: calc(100% - 200px);
 }
+
 
 #input_container {
 	position: relative;
 	left: 0px;
 	top: 50%;
 	transform: translateY(-50%);
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
 	font-weight: bold;
 	font-size: 16px;
 	line-height: 20px;
@@ -72,7 +72,7 @@ label {
 
 .input_controls {
 	width:160px;
-	font-family: "Helvetica Neue", Helvetica, Arial, sans-serif;
+	font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
 	font-weight: bold;
 	font-size: 12px;
 	line-height: 20px;
@@ -101,6 +101,10 @@ label {
 .handsontable {
     overflow: auto;
     font: 9px 'Lucida Console', sans-serif;
+}
+
+table.htCore td {
+    white-space: nowrap;
 }
 
 #notice {

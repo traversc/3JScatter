@@ -10,6 +10,12 @@
  */
 /*! normalize.css v3.0.2 | MIT License | git.io/normalize */
 
+/* override needed for firefox forms.css dumb =/ */
+.btn {
+	font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
+	font-size: 12px;
+}
+
 .btn {
   display: inline-block;
   margin-bottom: 0;

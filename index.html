@@ -2,9 +2,8 @@
 <html>
 <head>
 <title>3JScatter: 3D scatter plotter</title>
-	<!--predefined libraries-->
-	<link rel="stylesheet" href="css/bootstrap.css">
-	<link rel="stylesheet" href="css/bootstrap-theme.css">
+	<link rel="stylesheet" href="css/reset.css">
+
 	<script src="js/three.min.v69.js"></script>  
 	<script src="js/WebGLDetector.js"></script>  
 	<script src="js/OrbitControls.js"></script>
@@ -13,391 +12,485 @@
 	<script src="js/dat.gui.min.js"></script>
 	<script src="js/jquery-1.11.2.min.js"></script>
 	<script src="js/handsontable.full.min.js"></script>
-	<link rel="stylesheet" href="css/handsontable.full.min.css">
 
-	
-	
-	<!--own code-->
 	<script src="js/tc.functions.js"></script>
 	<script src="js/tc.gui.controls.js"></script>
 	<script src="js/tc.data.input.js"></script>
+	
+	<link rel="stylesheet" href="css/handsontable.full.min.css">
+	<link rel="stylesheet" href="css/bootstrap_button.css">
+	<link rel="stylesheet" href="css/bootstrap-theme_button.css">
 	<link type="text/css" href="css/styles.css" rel="stylesheet"/>
+	<link type="text/css" href="css/pagination_styles.css" rel="stylesheet"/>
+	
 
 </head>
-	<body>
-		<!--div id="title">3JScatter: 3D scatter plotter</div-->
-		<div id="plotarea">
-		<u>Under Construction</u><br><br>
-		Demo 1: <a href="javascript:demo1();">Tissue sub-type Principal Component Analysis</a><br>
-		Demo 2: <a href="javascript:demo2();">Different shape example</a><br>
-		Demo 3: <a href="javascript:demo3();">Line plot example (Dow Jones Industrial Average)</a><br><br>
-		<span id="notice">This page uses Javascript.  Please use the latest version of Chrome or Firefox.</span>
-		</div>
-		<div id="footer">
-			<div id="input_container">
-				Controls
-				<div id="add_series_form" class="input_controls">
-					ADD DATA SERIES<br>
-					<button type="button" class="btn btn-block btn-default btn-sm" onclick="init()">Add Points</button>
-					<button type="button" class="btn btn-block btn-default btn-sm" onclick="init()">Add Lines</button>
-					<button type="button" class="btn btn-block btn-default btn-sm" onclick="init()">Add Text</button>
-					
-					<!--textarea id="textinputarea" rows="5"></textarea-->
-				</div>
-				<div id="plot_data_form" class="input_controls">
-					PLOT CONTROLS<br>
-					<button type="button" class="btn btn-block btn-default btn-xs" onclick="init()">Plot Data</button>
-					<button type="button" class="btn btn-block btn-default btn-xs" onclick="location.reload();">Reset</button>
-					<button type="button" class="btn btn-block btn-default btn-xs" onclick="location.reload();">Export PNG</button><br>
-					<button type="button" class="btn btn-block btn-default btn-xs btn-info">Clear Settings</button>
-					<!--textarea id="textinputarea" rows="5"></textarea-->
-				</div>
+<body>
+	<!--div id="title">3JScatter: 3D scatter plotter</div-->
+	<div id="plotarea">
+	<u>Under Construction</u><br><br>
+	Demo 1: <a href="javascript:demo1();">Tissue sub-type Principal Component Analysis</a><br>
+	Demo 2: <a href="javascript:demo2();">Different shape example</a><br>
+	<!--Demo 3: <a href="javascript:demo3();">Line plot example (Dow Jones Industrial Average)</a><br><br>-->
+	<span id="notice">This page uses Javascript and WebGL.  Please use the latest version of Chrome or Firefox.</span>
+	</div>
+	
+	<div id="footer">
+		<div id="input_container">
+			Input Controls
+			<div id="add_series_form" class="input_controls">
+				DATA SERIES<br>
+				<button type="button" id = 'add_points' class="btn btn-block btn-default btn-xs">Add Points</button>
+				<button type="button" id = 'add_lines' class="btn btn-block btn-default btn-xs">Add Lines</button>
+				<button type="button" id = 'add_text' class="btn btn-block btn-default btn-xs">Add Text</button>
+				<button type="button" id = 'add_Lights' class="btn btn-block btn-default btn-xs">Add Lights</button>
+				<button type="button" id = 'delete_series' class="btn btn-block btn-default btn-xs btn-info">Delete Current Series</button>
 			</div>
-			<div id="datasheet_container"><div id="datasheet" class="handsontable"></div></div>
+			<div id="plot_data_form" class="input_controls">
+				PLOT CONTROLS<br>
+				<button type="button" id = 'plot_data' class="btn btn-block btn-default btn-xs" onclick="init()">Plot Data</button>
+				<button type="button" id = 'reset_plot' class="btn btn-block btn-default btn-xs">Reset</button>
+				<button type="button" id = 'export_png' class="btn btn-block btn-default btn-xs">Export PNG</button>
+			</div>
 		</div>
-		<div id="gui_sidebar">
-		<div id="about"><u><b>3JScatter</b></u> is a highly customizable 3D-plotter written with three.js. <a href="http://traversching.wordpress.com">traversching.wordpress.com</a></div>
-		<div id="savebar">
-		<div class="btn-group btn-group-xs" role="group"><button type="button" class="btn btn-default">Save Settings</button>
-		<button type="button" class="btn btn-default">Revert</button></div>
-		
-		<!--span class='savebar-button' id="save_settings">Save Settings</span><span class='savebar-button' id="revert_settings">Revert</span--></div>
+		<div id="pagination">
 		</div>
-		
-		
-		
-		
-		
-		
-		
-		<script>
-			renderer = new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer: true, alpha: true, precision: "highp"});
-			//renderer = new THREE.WebGLRenderer();
-			//renderer = new THREE.SVGRenderer({antialias:true});
-			initControlGui();
-			initDatasheet();
-			//var camera, controls, scene, renderer;
-			points = [];
-			histLines = [];
-			//var cube_outlines = [];
-			texts = [];
-			controls_enabled = false;
-			function demo1() {
-				gui_vars.cam_init_pos_x = 75;
-				gui_vars.cam_init_pos_y = 120;
-				gui_vars.cam_init_pos_z = 150;
-				hot_table.loadData(d3.csv.parseRows(demostring01));
-				init();
-			}
-			function demo2() {
-				gui_vars.cam_init_pos_x = 20;
-				gui_vars.cam_init_pos_y = -10;
-				gui_vars.cam_init_pos_z = -150;
-				hot_table.loadData(d3.csv.parseRows(demostring02));
-				init();
-			}
-			function demo3() {
-				//$('#textinputarea').get(0).value = demostring03;
-				hot_table.loadData(d3.csv.parseRows(demostring03));
-				init();
-			}
+		<div id="datasheet_container"><div id="datasheet" class="handsontable"></div></div>
+	</div>
+	
+	<div id="gui_sidebar">
+	<div id="about"><u><b>3JScatter</b></u> is a highly customizable 3D-plotter written with three.js. <a href="http://traversching.wordpress.com">traversching.wordpress.com</a></div>
+	<div id="savebar">
+	<div class="btn-group btn-group-xs" role="group"><button type="button" class="btn btn-default" onclick="saveGuiState()">Save Settings</button>
+	<button type="button" class="btn btn-default" onclick="loadGuiState(); loadFoldersState();">Revert</button>
+	<button type="button" class="btn btn-default" onclick="clearGuiState();">Clear</button></div></div>
+	</div>
+	
+	
+	
+	
+	
+	
+	
+	<script>
+	
+	
+	renderer = new THREE.WebGLRenderer({antialias:true, preserveDrawingBuffer: true, alpha: true, precision: "highp"});
+	//renderer = new THREE.WebGLRenderer();
+	//renderer = new THREE.SVGRenderer({antialias:true});
+	initControlGui();
+	initDatasheet();
+	//var camera, controls, scene, renderer;
+	points = [];
+	histLines = [];
+	texts = [];
+	controls_enabled = false;
+	function demo1() {
+		gui_vars.cam_pos_x = 75;
+		gui_vars.cam_pos_y = 120;
+		gui_vars.cam_pos_z = 150;
+		gui_vars.axes_origin = '-13.94088,18.45637,-48.34733989';
+		gui_vars.axes_label_x = 'PC1';
+		gui_vars.axes_label_y = 'PC2';
+		gui_vars.axes_label_z = 'PC3';
+		gui_vars.axes_font_size = 3;
+		//gui_vars.axes_limit_x = '-61.08749847,33.20573654';
+		//gui_vars.axes_limit_y = '-43.00385156,79.91658524';
+		//gui_vars.axes_limit_z = '-43.34733989,29.88257884';
 
+		gui_vars.scale_x = 50;
+		gui_vars.scale_y = 50;
+		gui_vars.scale_z = 25;
+		hot_table.loadData(d3.csv.parseRows(demostring01));
+		init();
+	}
+	function demo2() {
+		gui_vars.cam_pos_x = 6.8111164727439535;
+		gui_vars.cam_pos_y = -258.9940054581132;
+		gui_vars.cam_pos_z = 41.374497176635742;
+		gui_vars.axes_origin = '-1.2,-1.2,-1.2';
+		gui_vars.axes_limit_x = '-1.5,1.2';
+		gui_vars.axes_limit_y = '-1.5,1.2';
+		gui_vars.axes_limit_z = '-1.5,1.2';
+		hot_table.loadData(d3.csv.parseRows(demostring02));
+		init();
+	}
+	function demo3() {
+		//$('#textinputarea').get(0).value = demostring03;
+		hot_table.loadData(d3.csv.parseRows(demostring03));
+		init();
+	}
+
+	
+	function init() {
+		//////////////////////
+		$("#plotarea").empty();
+		if (! Detector.webgl) {
+			var parameters = {parent: $("#plotarea")[0], id : "error"};
+			Detector.addGetWebGLMessage(parameters);
+			return;
+		}
+		var w,h;
+		if(gui_vars.fix_width == 'auto') {
+			w = document.getElementById('plotarea').clientWidth;
+		} else {
+			w = parseInt(gui_vars.fix_width);
+		}
+		if(gui_vars.fix_height == 'auto') {
+			h = document.getElementById('plotarea').clientHeight;
+		} else {
+			h = parseInt(gui_vars.fix_height);
+		}
+		renderer.setSize(w, h);
+		renderer.setClearColor(parseInt(gui_vars.bgcolor), 1.0);
+		//if(gui_vars.shadows_enabled) {renderer.shadowMapEnabled = true;}
+		//renderer.shadowMapType = THREE.PCFSoftShadowMap;
+		renderer.domElement.id = "myrenderer";
+		var plotarea = document.getElementById('plotarea');
+		plotarea.appendChild(renderer.domElement);
+		scene = new THREE.Scene();
+		camera = new THREE.PerspectiveCamera(45, w / h, 1, 1000);
+		renderer.render(scene,camera);
+		//////////////////////
+		
+		var input = table2csv();
+		var input_array = input.split("\n");
+		var sre = /^"series/;
+		var series_inds = input_array.reduce(function(a, e, i) {
+			if (e.search(sre) > -1)
+				a.push(i);
+			return a;
+		}, []);
+		series_inds.push(input_array.length);
+		series_array = [];
+		var all_xcoords = [];
+		var all_ycoords = [];
+		var all_zcoords = [];
+		series_inds.reduce(function(start, end) {
+			var series = d3.csv.parse(input_array.slice(start,end).join("\n"));
+			for(var i=0; i<series.length;i++) {
+				if(!isNaN(parseFloat(series[i].x))) all_xcoords.push(series[i].x);
+				if(!isNaN(parseFloat(series[i].y))) all_ycoords.push(series[i].y);
+				if(!isNaN(parseFloat(series[i].z))) all_zcoords.push(series[i].z);
+			}
+			series_array.push(series);
+			return end;
+		})
+		var xlim = [Math.min.apply(null,all_xcoords),Math.max.apply(null,all_xcoords)];
+		var ylim = [Math.min.apply(null,all_ycoords),Math.max.apply(null,all_ycoords)];
+		var zlim = [Math.min.apply(null,all_zcoords),Math.max.apply(null,all_zcoords)];
+		
+		
+		//coordinate axes
+		if(gui_vars.axes_origin != 'auto') {
+			var axes_origin = gui_vars.axes_origin.split(",");
+			ao_rescaled_x = rescalePosition(parseFloat(axes_origin[0]),xlim[0],xlim[1],gui_vars.scale_x);
+			ao_rescaled_y = rescalePosition(parseFloat(axes_origin[1]),ylim[0],ylim[1],gui_vars.scale_y);
+			ao_rescaled_z = rescalePosition(parseFloat(axes_origin[2]),zlim[0],zlim[1],gui_vars.scale_z);
+		} else {
+			ao_rescaled_x = 0;
+			ao_rescaled_y = 0;
+			ao_rescaled_z = 0;
+		}
+		
+		var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
+		var lineGeo = new THREE.Geometry();
+		if(gui_vars.axes_limit_x == 'auto') {
+			var x_axis_limits = [-gui_vars.scale_x * 1.25,gui_vars.scale_x * 1.25];
+		} else {
+			var x_axis_limits = gui_vars.axes_limit_x.split(",");
+			x_axis_limits = [rescalePosition(parseFloat(x_axis_limits[0]),xlim[0],xlim[1],gui_vars.scale_x),rescalePosition(parseFloat(x_axis_limits[1]),xlim[0],xlim[1],gui_vars.scale_x)];
+		}
+		lineGeo.vertices.push(v(x_axis_limits[0], ao_rescaled_y, ao_rescaled_z), v(x_axis_limits[1], ao_rescaled_y, ao_rescaled_z));
+		
+		var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
+		if(gui_vars.axes_limit_y == 'auto') {
+			var y_axis_limits = [-gui_vars.scale_y * 1.25,gui_vars.scale_y * 1.25];
+		} else {
+			var y_axis_limits = gui_vars.axes_limit_y.split(",");
+			y_axis_limits = [rescalePosition(parseFloat(y_axis_limits[0]),ylim[0],ylim[1],gui_vars.scale_y),rescalePosition(parseFloat(y_axis_limits[1]),ylim[0],ylim[1],gui_vars.scale_y)];
+		}	
+		lineGeo.vertices.push(v(ao_rescaled_x, y_axis_limits[0], ao_rescaled_z), v(ao_rescaled_x, y_axis_limits[1], ao_rescaled_z));
+		
+		if(gui_vars.axes_limit_z == 'auto') {
+			var z_axis_limits = [-gui_vars.scale_z * 1.25,gui_vars.scale_z * 1.25];
+		} else {
+			var z_axis_limits = gui_vars.axes_limit_z.split(",");
+			z_axis_limits = [rescalePosition(parseFloat(z_axis_limits[0]),zlim[0],zlim[1],gui_vars.scale_z),rescalePosition(parseFloat(z_axis_limits[1]),zlim[0],zlim[1],gui_vars.scale_z)];
+		}	
+		lineGeo.vertices.push(v(ao_rescaled_x, ao_rescaled_y, z_axis_limits[0]), v(ao_rescaled_x, ao_rescaled_y, z_axis_limits[1]));
+		line = new THREE.Line(lineGeo, lineMat, THREE.LinePieces);
+		scene.add(line);
+		
+		//tick marks
+		var textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, overdraw: 0.5 });
+		var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
+		var lineGeo = new THREE.Geometry();
+		if(gui_vars.tick_coord_x != "off") {
+			var temp = gui_vars.tick_coord_x.split(";");
+			var tick_coord_vec = temp[0].split(",");
+			var tick_label_vec = temp[1].split(",");
+			var z_tick_size = gui_vars.scale_z * 0.05;
+			for(var i = 0; i<tick_coord_vec.length; i++) {
+				lineGeo.vertices.push(v(rescalePosition(parseFloat(tick_coord_vec[i]),xlim[0],xlim[1], gui_vars.scale_x), ao_rescaled_y, ao_rescaled_z + z_tick_size), v(rescalePosition(parseFloat(tick_coord_vec[i]),xlim[0],xlim[1],gui_vars.scale_x), ao_rescaled_y, ao_rescaled_z - z_tick_size));
+			}
+			line = new THREE.Line(lineGeo, lineMat, THREE.LinePieces);
+			scene.add(line);
+			for(var i = 0; i<tick_label_vec.length; i++) {
+				var text3d = new THREE.TextGeometry(tick_label_vec[i], {size: gui_vars.tick_font_size,height: 0,curveSegments: 2,font: "helvetiker"});
+				text3d.center();
+				var tick = new THREE.Mesh(text3d, textMaterial);
+				tick.position.set(rescalePosition(parseFloat(tick_coord_vec[i]),xlim[0],xlim[1], gui_vars.scale_x), ao_rescaled_y, ao_rescaled_z - z_tick_size*1.5 - text3d.boundingBox.max.y*1.5);
+				texts.push(tick);
+				scene.add(tick);
+			}
+		}
+		
+		var textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, overdraw: 0.5 });
+		var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
+		var lineGeo = new THREE.Geometry();
+		if(gui_vars.tick_coord_y != "off") {
+			var temp = gui_vars.tick_coord_y.split(";");
+			var tick_coord_vec = temp[0].split(",");
+			var tick_label_vec = temp[1].split(",");
+			var z_tick_size = gui_vars.scale_z * 0.05;
+			for(var i = 0; i<tick_coord_vec.length; i++) {
+				lineGeo.vertices.push(v(ao_rescaled_x, rescalePosition(parseFloat(tick_coord_vec[i]),ylim[0],ylim[1], gui_vars.scale_y), ao_rescaled_z + z_tick_size), v(ao_rescaled_x, rescalePosition(parseFloat(tick_coord_vec[i]),ylim[0],ylim[1], gui_vars.scale_y), ao_rescaled_z - z_tick_size));
+			}
+			line = new THREE.Line(lineGeo, lineMat, THREE.LinePieces);
+			scene.add(line);
+			for(var i = 0; i<tick_label_vec.length; i++) {
+				var text3d = new THREE.TextGeometry(tick_label_vec[i], {size: gui_vars.tick_font_size,height: 0,curveSegments: 2,font: "helvetiker"});
+				text3d.center();
+				var tick = new THREE.Mesh(text3d, textMaterial);
+				tick.position.set(ao_rescaled_x, rescalePosition(parseFloat(tick_coord_vec[i]),ylim[0],ylim[1], gui_vars.scale_x), ao_rescaled_z - z_tick_size*1.5 - text3d.boundingBox.max.y*1.5);
+				texts.push(tick);
+				scene.add(tick);
+			}
+		}
+		
+		var lineGeo = new THREE.Geometry();
+		if(gui_vars.tick_coord_z != "off") {
+			var temp = gui_vars.tick_coord_z.split(";");
+			var tick_coord_vec = temp[0].split(",");
+			var tick_label_vec = temp[1].split(",");
+			var tick_size = Math.min(gui_vars.scale_x,gui_vars.scale_x) * 0.05;
+			for(var i = 0; i<tick_coord_vec.length; i++) {
+				lineGeo.vertices.push(v(ao_rescaled_x + tick_size, ao_rescaled_y, rescalePosition(parseFloat(tick_coord_vec[i]),zlim[0],zlim[1], gui_vars.scale_z)), v(ao_rescaled_x - tick_size, ao_rescaled_y, rescalePosition(parseFloat(tick_coord_vec[i]),zlim[0],zlim[1], gui_vars.scale_z)));
+			}
+			z_axis_ticks = new THREE.Line(lineGeo, lineMat, THREE.LinePieces);
+			z_axis_ticks.position.set(ao_rescaled_x, ao_rescaled_y, ao_rescaled_z);
+			z_axis_ticks.geometry.applyMatrix(new THREE.Matrix4().makeTranslation(-ao_rescaled_x,-ao_rescaled_y,-ao_rescaled_z));
+			scene.add(z_axis_ticks);
+			for(var i = 0; i<tick_label_vec.length; i++) {
+				var text3d = new THREE.TextGeometry(tick_label_vec[i], {size: gui_vars.tick_font_size,height: 0,curveSegments: 2,font: "helvetiker"});
+				text3d.center();
+				text3d.applyMatrix(new THREE.Matrix4().makeTranslation(-tick_size*1.5 - text3d.boundingBox.max.x*1.5, 0, 0));
+				var tick = new THREE.Mesh(text3d, textMaterial);
+				tick.position.set(ao_rescaled_x, ao_rescaled_y, rescalePosition(parseFloat(tick_coord_vec[i]),zlim[0],zlim[1], gui_vars.scale_z));
+				texts.push(tick);
+				scene.add(tick);
+			}
+		}
+		
+		
+		//arrows
+		var triangle = new THREE.Shape();
+		triangle.moveTo(0,0);
+		triangle.lineTo(2,-4);
+		triangle.lineTo(-2,-4);
+		triangle.lineTo(0,0);
+		var geometry = triangle.makeGeometry();
+		var material = new THREE.MeshBasicMaterial({ color: 0x000000 });
+		material.side = THREE.DoubleSide;
+		zarrow = new THREE.Mesh(geometry, material);
+		zarrow.position.set(ao_rescaled_x, ao_rescaled_y, z_axis_limits[1]);
+		zarrow.rotation.x = Math.PI/2;
+		scene.add(zarrow);
+		yarrow = new THREE.Mesh(geometry, material);
+		yarrow.position.set(ao_rescaled_x, y_axis_limits[1], ao_rescaled_z);
+		scene.add(yarrow);
+		xarrow = new THREE.Mesh(geometry, material);
+		xarrow.position.set(x_axis_limits[1], ao_rescaled_y, ao_rescaled_z);
+		xarrow.rotation.z = -Math.PI/2;
+		scene.add(xarrow);
+
+		//axes labels
+		var textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, overdraw: 0.5 });
+		text3d = new THREE.TextGeometry(gui_vars.axes_label_x, {size: gui_vars.axes_font_size,height: 0,curveSegments: 2,font: "helvetiker"});
+		text3d.center();
+		var x_lab = new THREE.Mesh(text3d, textMaterial);
+		x_lab.position.set(x_axis_limits[1] + text3d.boundingBox.max.x + 5, ao_rescaled_y, ao_rescaled_z);
+		texts.push(x_lab);
+		scene.add(x_lab);
+		text3d = new THREE.TextGeometry(gui_vars.axes_label_y, {size: gui_vars.axes_font_size,height: 0,curveSegments: 2,font: "helvetiker"});
+		text3d.center();
+		var y_lab = new THREE.Mesh(text3d, textMaterial);
+		//y label offset by max.x bounding box b/c it rotates
+		y_lab.position.set(ao_rescaled_x, y_axis_limits[1] + text3d.boundingBox.max.x + 5, ao_rescaled_z);
+		texts.push(y_lab);
+		scene.add(y_lab);
+		text3d = new THREE.TextGeometry(gui_vars.axes_label_z, {size: gui_vars.axes_font_size,height: 0,curveSegments: 2,font: "helvetiker"});
+		text3d.center();
+		var z_lab = new THREE.Mesh(text3d, textMaterial);
+		z_lab.position.set(ao_rescaled_x, ao_rescaled_y, z_axis_limits[1] + text3d.boundingBox.max.z + 7);
+		texts.push(z_lab);
+		scene.add(z_lab);
 			
-			function init() {
-				//////////////////////
-				$("#plotarea").empty();
-				if (! Detector.webgl) {
-					var parameters = {parent: $("#plotarea")[0], id : "error"};
-					Detector.addGetWebGLMessage(parameters);
-					return;
-				}
-				var w,h;
-				if(gui_vars.fix_width == 'auto') {
-					w = document.getElementById('plotarea').clientWidth;
-				} else {
-					w = parseInt(gui_vars.fix_width);
-				}
-				if(gui_vars.fix_height == 'auto') {
-					h = document.getElementById('plotarea').clientHeight;
-				} else {
-					h = parseInt(gui_vars.fix_height);
-				}
-				renderer.setSize(w, h);
-				renderer.setClearColor(parseInt(gui_vars.bgcolor), 1.0);
-				if(gui_vars.shadows_enabled) {renderer.shadowMapEnabled = true;}
-				renderer.shadowMapType = THREE.PCFSoftShadowMap;
-				renderer.domElement.id = "myrenderer";
-				var plotarea = document.getElementById('plotarea');
-				plotarea.appendChild(renderer.domElement);
-				scene = new THREE.Scene();
-				camera = new THREE.PerspectiveCamera(45, w / h, 1, 1000);
-				renderer.render(scene,camera);
-				//////////////////////
-				
-				//point: x,y,z,pch,color,outline_color,size,hist,hist_color,euler_x,euler_y,euler_z
-				// line: x,y,z,pch,color,outline_color,size,hist,hist_color,euler_x,euler_y,euler_z,lty,line_size,line_color
-				// text: x,y,z,text,color,size
-				
-				var input = table2csv();
-				var input_array = input.split("\n");
-				var sre = /^series/;
-				var series_inds = input_array.reduce(function(a, e, i) {
-					if (e.search(sre) > -1)
-						a.push(i);
-					return a;
-				}, []);
-				series_inds.push(input_array.length);
-				series_array = [];
-				var all_xcoords = [];
-				var all_ycoords = [];
-				var all_zcoords = [];
-				series_inds.reduce(function(start, end) {
-					var series = d3.csv.parse(input_array.slice(start,end).join("\n"));
-					for(var i=0; i<series.length;i++) {
-						if(!isNaN(parseFloat(series[i].x))) all_xcoords.push(series[i].x);
-						if(!isNaN(parseFloat(series[i].y))) all_ycoords.push(series[i].y);
-						if(!isNaN(parseFloat(series[i].z))) all_zcoords.push(series[i].z);
-					}
-					series_array.push(series);
-					return end;
-				})
-				var xlim = [Math.min.apply(null,all_xcoords),Math.max.apply(null,all_xcoords)];
-				var ylim = [Math.min.apply(null,all_ycoords),Math.max.apply(null,all_ycoords)];
-				var zlim = [Math.min.apply(null,all_zcoords),Math.max.apply(null,all_zcoords)];
-				
-				for(var i=0; i<series_array.length;i++) {
-					series = series_array[i];
-					var point_radii = []; for (var i = 0; i < series.length; i++) point_radii[i] = 0; //initialize point radius array
-					//add points to scene
-					for(var i=0; i<series.length;i++) {
-						if(series[i].series != "line" && series[i].series != "point") continue;
-						var size = series[i].size == "" ? default_size : series[i].size;
-						var pch = series[i].pch == "" ? default_pch : series[i].pch;
-						var color = series[i].color == "" ? default_color : series[i].color;
-						var outline_color = series[i].outline_color == "" ? default_outline_color : series[i].outline_color;
-						var point = pointMesh(pch, size, color, outline_color);
-						
-						//compute bounding boxes
-						if(point instanceof THREE.Mesh) {
-							var geom = point.geometry;
-							geom.computeBoundingSphere();
-							point_radii[i] = geom.boundingSphere.radius;
-						} else { //instanceof THREE.Object3D
-							for (var j = 0; j < point.children.length; j ++) {
-								point.children[j].geometry.computeBoundingSphere();
-								if(point.children[j].geometry.boundingSphere.radius > point_radii[i]) {
-									point_radii[i] = point.children[j].geometry.boundingSphere.radius;
-								}
-							}
-						}
-						//point_radii[i] = point_radii[i] * 1.05;
-						
-						var euler_x = series[i].euler_x == "" || series[i].euler_x == "" ? 0 : series[i].euler_x * Math.PI/180;
-						var euler_y = series[i].euler_y == "" || series[i].euler_y == "" ? 0 : series[i].euler_y * Math.PI/180;
-						var euler_z = series[i].euler_z == "" || series[i].euler_z == "" ? 0 : series[i].euler_z * Math.PI/180;
-						point.applyMatrix(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(euler_x,euler_y,euler_z)));
-						
-						point.position.x = rescalePosition(series[i].x,xlim[0],xlim[1],gui_vars.scale_x);
-						point.position.y = rescalePosition(series[i].y,ylim[0],ylim[1],gui_vars.scale_y);
-						point.position.z = rescalePosition(series[i].z,zlim[0],zlim[1],gui_vars.scale_z);
-						//console.log(point.rotation);
-						//todo: check if shadows enabled
-						point.castShadow = true;
-						scene.add(point);
-						
-						//add hist lines
-						if(series[i].hist == "" || series[i].hist == "" || series[i].hist == "0") continue;
-						var hist = series[i].hist in ["1","2"] ? series[i].hist : default_hist;
-						var hist_color = series[i].hist_color == "" ? default_hist_color : series[i].hist_color;
-						if(hist == 1) {
-							var lineGeo = new THREE.Geometry();
-							lineGeo.vertices.push(v(point.position.x, point.position.y, 0), v(point.position.x, point.position.y, point.position.z));
-							var lineMat = new THREE.LineBasicMaterial({color: hist_color,lineWidth: 1, transparent: true, opacity: 0.5});
-							var line = new THREE.Line(lineGeo, lineMat);
-							line.type = THREE.Lines;
-							histLines.push(line);
-							scene.add(line);
-						}
-						if(hist == 2) {
-							var lineGeo = new THREE.Geometry();
-							lineGeo.vertices.push(
-								v(point.position.x, point.position.y, -gui_vars.scale_z * 1.25), v(point.position.x, point.position.y, point.position.z)
-							);
-							var lineMat = new THREE.LineBasicMaterial({color: hist_color,lineWidth: 1, transparent: true, opacity: 0.11});
-							var line = new THREE.Line(lineGeo, lineMat);
-							line.type = THREE.Lines;
-							histLines.push(line);
-							scene.add(line);
-						}
-					}
-					
-					//add line segments to scene
-					var prev_coords;
-					for(var i=0; i<series.length;i++) {
-						var lty = series[i].lty == "" ? default_lty : series[i].lty;
-						x = rescalePosition(series[i].x,xlim[0],xlim[1],gui_vars.scale_x);
-						y = rescalePosition(series[i].y,ylim[0],ylim[1],gui_vars.scale_y);
-						z = rescalePosition(series[i].z,zlim[0],zlim[1],gui_vars.scale_z);
-						if(typeof prev_coords == "undefined" || lty == "0" || lty == "" || series[i].series != "line") {
-							prev_coords = [x,y,z];
-							continue;
-						}
-						var line_size = series[i].line_size == "" ? default_line_size : series[i].line_size;
-						var line_color = series[i].line_color == "" ? default_line_color : series[i].line_color;
-						var p1 = v(x,y,z);
-						var p2 = v(prev_coords[0],prev_coords[1],prev_coords[2]);
-						var seg_len = p1.sub(p2).length();
-						var r1 = lty == "1" ? point_radii[i-1] : point_radii[i-1] * 1.05;
-						var r2 = lty == "1" ? point_radii[i] : point_radii[i] * 1.05;
-						if(seg_len < r1 + r2) {
-							prev_coords = [x,y,z];
-							continue;
-						}
-						var line_segment = lineSegmentMesh(prev_coords, [x,y,z], line_size, line_color, lty, r1, r2, true);
-						prev_coords = [x,y,z];
-						scene.add(line_segment);
-					}
-					
-					//add texts to scene x,y,z,text,color,size
-					for(var i=0; i<series.length;i++) {
-						if(series[i].series != "text") {continue;}
-						x = rescalePosition(series[i].x,xlim[0],xlim[1],gui_vars.scale_x);
-						y = rescalePosition(series[i].y,ylim[0],ylim[1],gui_vars.scale_y);
-						z = rescalePosition(series[i].z,zlim[0],zlim[1],gui_vars.scale_z);
-						var text_material = new THREE.MeshBasicMaterial({color: series[i].color, overdraw: 0.5});
-						var text_geometry = new THREE.TextGeometry(series[i].text, {size: series[i].size,height: 0,curveSegments: 2,font: "helvetiker"});
-						text_geometry.center();
-						var text_mesh = new THREE.Mesh(text_geometry, text_material);
-						text_mesh.position.set(x,y,z);
-						texts.push(text_mesh);
-						scene.add(text_mesh);
-					}
-				}
+		// lights
+		if(gui_vars.light_enabled) {
+			light = new THREE.SpotLight(0xcccccc);
+			light.position.set(0,0, 1000);
+			//light.castShadow = true;
+			//light.shadowDarkness = 0.5;
+			//light.shadowCameravisible = true;
+			scene.add(light);
+		}
 
+		for(var i=0; i<series_array.length;i++) {
+			var series = series_array[i];
+			var point_radii = []; for (var i = 0; i < series.length; i++) point_radii[i] = 0; //initialize point radius array
+			//add points to scene
+			for(var i=0; i<series.length;i++) {
+				if(series[i].series != "line" && series[i].series != "point") continue;
+				var size = series[i].size == "" ? default_size : series[i].size;
+				var pch = series[i].pch == "" ? default_pch : series[i].pch;
+				var color = series[i].color == "" ? default_color : series[i].color;
+				var outline_color = series[i].outline_color == "" ? default_outline_color : series[i].outline_color;
+				var point = pointMesh(pch, size, color, outline_color);
 				
-				//coordinate axes: to do: clean up and make more organized
-				if(gui_vars.axes_origin != 'auto') {
-					var axes_origin = gui_vars.axes_origin.split(",");
-					ao_rescaled_x = rescalePosition(parseFloat(axes_origin[0]),xlim[0],xlim[1],gui_vars.scale_x);
-					ao_rescaled_y = rescalePosition(parseFloat(axes_origin[1]),ylim[0],ylim[1],gui_vars.scale_y);
-					ao_rescaled_z = rescalePosition(parseFloat(axes_origin[2]),zlim[0],zlim[1],gui_vars.scale_z);
-				} else {
-					ao_rescaled_x = 0;
-					ao_rescaled_y = 0;
-					ao_rescaled_z = 0;
-				}
-				var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
-				var lineGeo = new THREE.Geometry();
-				lineGeo.vertices.push(v(gui_vars.scale_x * 1.25, ao_rescaled_y, ao_rescaled_z), v(-gui_vars.scale_x * 1.25, ao_rescaled_y, ao_rescaled_z));
-				var line = new THREE.Line(lineGeo, lineMat);
-				line.type = THREE.Lines;
-				scene.add(line);
-				var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
-				var lineGeo = new THREE.Geometry();
-				lineGeo.vertices.push(v(ao_rescaled_x, gui_vars.scale_y * 1.25, ao_rescaled_z), v(ao_rescaled_x, -gui_vars.scale_y * 1.25, ao_rescaled_z));
-				var line = new THREE.Line(lineGeo, lineMat);
-				line.type = THREE.Lines;
-				scene.add(line);
-				var lineMat = new THREE.LineBasicMaterial({color: 0x000000,lineWidth: 1});
-				var lineGeo = new THREE.Geometry();
-				lineGeo.vertices.push(v(ao_rescaled_x, ao_rescaled_y, gui_vars.scale_z * 1.25), v(ao_rescaled_x, ao_rescaled_y, -gui_vars.scale_z * 1.25));
-				var line = new THREE.Line(lineGeo, lineMat);
-				line.type = THREE.Lines;
-				scene.add(line);
-				
-				//arrows
-				var triangle = new THREE.Shape();
-				triangle.moveTo(0,0);
-				triangle.lineTo(2, -4);
-				triangle.lineTo(-2, -4);
-				triangle.lineTo(0,0);
-				var geometry = triangle.makeGeometry();
-				var material = new THREE.MeshBasicMaterial({ color: 0x000000 });
-				material.side = THREE.DoubleSide;
-				zarrow = new THREE.Mesh(geometry, material);
-				zarrow.position.set(ao_rescaled_x, ao_rescaled_y, gui_vars.scale_z * 1.25);
-				zarrow.rotation.x = Math.PI/2;
-				scene.add(zarrow);
-				xarrow = new THREE.Mesh(geometry, material);
-				xarrow.position.set(gui_vars.scale_x * 1.25, ao_rescaled_y, ao_rescaled_z);
-				xarrow.rotation.z = -Math.PI/2;
-				scene.add(xarrow);
-				yarrow = new THREE.Mesh(geometry, material);
-				yarrow.position.set(ao_rescaled_x, gui_vars.scale_x * 1.25, ao_rescaled_z);
-				scene.add(yarrow);
-				
-				// bottom plane for shadows / reflections
-				var geometry = new THREE.PlaneGeometry(10000,10000);
-				var plane_mat = new THREE.MeshBasicMaterial({color: parseInt(gui_vars.bgcolor)});
-				var plane = new THREE.Mesh(geometry, plane_mat);
-				plane.receiveShadow = true;
-				plane.position.z = -gui_vars.scale_z * 1.25;
-				scene.add(plane);
-
-				//text
-				//text3d.computeBoundingBox();
-				//var centerOffsetx = -0.5 * (text3d.boundingBox.max.x - text3d.boundingBox.min.x);
-				//var centerOffsetz = -0.5 * (text3d.boundingBox.max.z - text3d.boundingBox.min.z);
-				var textMaterial = new THREE.MeshBasicMaterial({ color: 0x000000, overdraw: 0.5 });
-				text3d = new THREE.TextGeometry(gui_vars.axes_label_x, {size: 8,height: 0,curveSegments: 2,font: "helvetiker"});
-				text3d.center();
-				var x_lab = new THREE.Mesh(text3d, textMaterial);
-				x_lab.position.set(gui_vars.scale_x * 1.30 + text3d.boundingBox.max.x, ao_rescaled_y, ao_rescaled_z);
-				texts.push(x_lab);
-				scene.add(x_lab);
-				text3d = new THREE.TextGeometry(gui_vars.axes_label_y, {size: 8,height: 0,curveSegments: 2,font: "helvetiker"});
-				var y_lab = new THREE.Mesh(text3d, textMaterial);
-				text3d.center();
-				y_lab.position.set(ao_rescaled_x, gui_vars.scale_x * 1.30 + text3d.boundingBox.max.x, ao_rescaled_z);
-				texts.push(y_lab);
-				scene.add(y_lab);
-				text3d = new THREE.TextGeometry(gui_vars.axes_label_z, {size: 8,height: 0,curveSegments: 2,font: "helvetiker"});
-				var z_lab = new THREE.Mesh(text3d, textMaterial);
-				text3d.center();
-				z_lab.position.set(ao_rescaled_x, ao_rescaled_y, gui_vars.scale_z * 1.45);
-				texts.push(z_lab);
-				scene.add(z_lab);
-					
-				// lights
-				if(gui_vars.light_enabled) {
-					light = new THREE.SpotLight(0xcccccc);
-					light.position.set(0,0, 1000);
-					light.castShadow = true;
-					light.shadowDarkness = 0.5;
-					light.shadowCameravisible = true;
-					scene.add(light);
+				//compute bounding boxes
+				if(point instanceof THREE.Mesh) {
+					var geom = point.geometry;
+					geom.computeBoundingSphere();
+					point_radii[i] = geom.boundingSphere.radius;
+				} else { //instanceof THREE.Object3D
+					for (var j = 0; j < point.children.length; j ++) {
+						point.children[j].geometry.computeBoundingSphere();
+						if(point.children[j].geometry.boundingSphere.radius > point_radii[i]) {
+							point_radii[i] = point.children[j].geometry.boundingSphere.radius;
+						}
+					}
 				}
 				
-				camera.position.z = gui_vars.cam_pos_x;
-				camera.position.x = gui_vars.cam_pos_y;
-				camera.position.y = gui_vars.cam_pos_z;
-				camera.up = v(0,0,1);
-				controls = new THREE.OrbitControls(camera, renderer.domElement);
-				controls.damping = 0.2;
+				var euler_x = series[i].euler_x == "" || series[i].euler_x == "" ? 0 : series[i].euler_x * Math.PI/180;
+				var euler_y = series[i].euler_y == "" || series[i].euler_y == "" ? 0 : series[i].euler_y * Math.PI/180;
+				var euler_z = series[i].euler_z == "" || series[i].euler_z == "" ? 0 : series[i].euler_z * Math.PI/180;
+				point.applyMatrix(new THREE.Matrix4().makeRotationFromEuler(new THREE.Euler(euler_x,euler_y,euler_z)));
 				
-				controls_enabled = true;
-				animate();
+				point.position.x = rescalePosition(series[i].x,xlim[0],xlim[1],gui_vars.scale_x);
+				point.position.y = rescalePosition(series[i].y,ylim[0],ylim[1],gui_vars.scale_y);
+				point.position.z = rescalePosition(series[i].z,zlim[0],zlim[1],gui_vars.scale_z);
+				//point.castShadow = true;
+				scene.add(point);
+				
+				//add hist lines
+				if(series[i].hist == "" || series[i].hist == "0") continue;
+				var hist_color = series[i].hist_color == "" ? default_hist_color : series[i].hist_color;
+				
+				var lineGeo = new THREE.Geometry();
+				lineGeo.vertices.push(v(point.position.x, point.position.y, ao_rescaled_z), v(point.position.x, point.position.y, point.position.z));
+				var lineMat = new THREE.LineBasicMaterial({color: hist_color,lineWidth: 1, transparent: true, opacity: series[i].hist});
+				var line = new THREE.Line(lineGeo, lineMat);
+				line.type = THREE.Lines;
+				histLines.push(line);
+				scene.add(line);
 			}
-			function animate() {
-				if(controls_enabled) {
-					requestAnimationFrame(animate);
-					//for(var k = 0; k<cube_outlines.length; k++){
-					//	cube_outlines[k].lookAt(camera.position);  					 
-					//}
-					for(var k = 0; k<texts.length; k++){
-						texts[k].quaternion.copy(camera.quaternion);					
-					}
-					//console.log(zaxis.rotation);
-					//mesh.lookAt(camera.position);	
-					zarrow.rotation.x = Math.PI/2;
-					zarrow.rotation.z = 0;
-					zarrow.rotation.y = -Math.atan(camera.position.x/camera.position.y);
-					//console.log(mesh.rotation.y);
-					//mesh.rotation.y +=0.1;
-					renderer.render(scene, camera);
-					controls.update();
+			
+			//add line segments to scene
+			var prev_coords;
+			var prev_pch = 0;
+			for(var i=0; i<series.length;i++) {
+				var lty = series[i].lty == "" ? default_lty : series[i].lty;
+				x = rescalePosition(series[i].x,xlim[0],xlim[1],gui_vars.scale_x);
+				y = rescalePosition(series[i].y,ylim[0],ylim[1],gui_vars.scale_y);
+				z = rescalePosition(series[i].z,zlim[0],zlim[1],gui_vars.scale_z);
+				if(typeof prev_coords == "undefined" || lty == "0" || lty == "" || series[i].series != "line") {
+					prev_coords = [x,y,z];
+					prev_pch = series[i].pch;
+					continue;
 				}
-			}	
-		</script>
-	</body>
+				var line_size = series[i].line_size == "" ? default_line_size : series[i].line_size;
+				var line_color = series[i].line_color == "" ? default_line_color : series[i].line_color;
+				var p1 = v(x,y,z);
+				var p2 = v(prev_coords[0],prev_coords[1],prev_coords[2]);
+				var seg_len = p1.sub(p2).length();
+				if(lty == "1") {
+					var r1 = point_radii[i-1];
+					var r2 = point_radii[i];
+				} else if(lty == "2") {
+					var r1 = point_radii[i-1] * 1.05;
+					var r2 = point_radii[i] * 1.05;
+				}
+
+				if(seg_len < r1 + r2) {
+					prev_coords = [x,y,z];
+					prev_pch = series[i].pch;
+					continue;
+				}
+				var line_segment = lineSegmentMesh(prev_coords, [x,y,z], r1, r2, lty, series[i].pch, prev_pch, line_size, line_color);
+				prev_coords = [x,y,z];
+				prev_pch = series[i].pch;
+				scene.add(line_segment);
+			}
+			
+			//add texts to scene x,y,z,text,color,size
+			for(var i=0; i<series.length;i++) {
+				if(series[i].series != "text") {continue;}
+				x = rescalePosition(series[i].x,xlim[0],xlim[1],gui_vars.scale_x);
+				y = rescalePosition(series[i].y,ylim[0],ylim[1],gui_vars.scale_y);
+				z = rescalePosition(series[i].z,zlim[0],zlim[1],gui_vars.scale_z);
+				var text_material = new THREE.MeshBasicMaterial({color: series[i].color, overdraw: 0.5});
+				var text_geometry = new THREE.TextGeometry(series[i].text, {size: series[i].size,height: 0,curveSegments: 2,font: "helvetiker"});
+				text_geometry.center();
+				var text_mesh = new THREE.Mesh(text_geometry, text_material);
+				text_mesh.position.set(x,y,z);
+				texts.push(text_mesh);
+				scene.add(text_mesh);
+			}
+		}
+		
+		camera.position.x = gui_vars.cam_pos_x;
+		camera.position.y = gui_vars.cam_pos_y;
+		camera.position.z = gui_vars.cam_pos_z;
+		camera.up = v(0,0,1);
+		controls = new THREE.OrbitControls(camera, renderer.domElement);
+		controls.damping = 0.2;
+		
+		controls_enabled = true;
+		animate();
+	}
+	
+	function animate() {
+		if(controls_enabled) {
+			requestAnimationFrame(animate);
+			//for(var k = 0; k<cube_outlines.length; k++){
+			//	cube_outlines[k].lookAt(camera.position);  					 
+			//}
+			for(var k = 0; k<texts.length; k++){
+				texts[k].quaternion.copy(camera.quaternion);					
+			}
+			//console.log(zaxis.rotation);
+			//mesh.lookAt(camera.position);	
+			zarrow.rotation.x = Math.PI/2;
+			zarrow.rotation.z = 0;
+			zarrow.rotation.y = -Math.atan(camera.position.x/camera.position.y);
+			
+			if(typeof z_axis_ticks != "undefined") {
+				z_axis_ticks.rotation.z = -Math.atan(camera.position.x/camera.position.y);
+			}
+			//z_axis_ticks.geometry.applyMatrix(new THREE.Matrix4().makeRotationZ(Math.atan(camera.position.x/camera.position.y)));
+			//z_axis_ticks.geometry.verticesNeedUpdate = true;
+			//z_axis_ticks.rotation.x = Math.PI/2;
+			//z_axis_ticks.rotation.z = 0;
+			//z_axis_ticks.rotation.y = -Math.atan(camera.position.x/camera.position.y);
+
+			//console.log(mesh.rotation.y);
+			//mesh.rotation.y +=0.1;
+			renderer.render(scene, camera);
+			controls.update();
+		}
+	}	
+	</script>
+</body>
 </html>

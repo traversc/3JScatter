@@ -1,52 +1,51 @@
-//no var declaration to ensure in global scope
+function loadDefaultSettings() {
+	gui_vars = {}
+	gui_vars.light_enabled = true;
+	//gui_vars.shadows_enabled = false;
+	gui_vars.axes_origin = 'auto';
 
-gui_vars = {}
-gui_vars.first_time = true;
-gui_vars.light_enabled = true;
-gui_vars.shadows_enabled = false;
-gui_vars.fix_plot_dimensions = false;
-gui_vars.fix_axes_loc = false;
-gui_vars.axes_origin = 'auto';
-gui_vars.axes_label_x = 'x';
-gui_vars.axes_label_y = 'y';
-gui_vars.axes_label_z = 'z';
-gui_vars.axes_limit_x = 'auto';
-gui_vars.axes_limit_y = 'auto';
-gui_vars.axes_limit_z = 'auto';
-gui_vars.axes_font_size = 8;
-gui_vars.fix_width = 'auto';
-gui_vars.fix_height = 'auto';
-gui_vars.bgcolor = '0xffffff';
-gui_vars.cam_pos_x = 100;
-gui_vars.cam_pos_y = 100;
-gui_vars.cam_pos_z = 100;
-gui_vars.scale_x = 50;
-gui_vars.scale_y = 50;
-gui_vars.scale_z = 30;
+	gui_vars.axes_label_x = 'x';
+	gui_vars.axes_label_y = 'y';
+	gui_vars.axes_label_z = 'z';
+
+	gui_vars.axes_limit_x = 'auto';
+	gui_vars.axes_limit_y = 'auto';
+	gui_vars.axes_limit_z = 'auto';
+
+	gui_vars.axes_font_size = 8;
+	gui_vars.fix_width = 'auto';
+	gui_vars.fix_height = 'auto';
+	gui_vars.bgcolor = '0xffffff';
+
+	gui_vars.cam_pos_x = 100;
+	gui_vars.cam_pos_y = 100;
+	gui_vars.cam_pos_z = 100;
+
+	gui_vars.scale_x = 50;
+	gui_vars.scale_y = 50;
+	gui_vars.scale_z = 30;
+
+	gui_vars.scale_x = 50;
+	gui_vars.scale_y = 50;
+	gui_vars.scale_z = 50;
+
+	gui_vars.tick_coord_x = 'off';
+	gui_vars.tick_coord_y = 'off';
+	gui_vars.tick_coord_z = 'off';
+	gui_vars.tick_font_size = 4;
+}
+
 
 			
 function reset() { //reload webpage, is there a better way? maybe clear all window objects and re-init?
 	location.reload();
 }
-//dat.gui variables
 function exportpng() {
 	window.open(renderer.domElement.toDataURL('image/png'),'screenshot');
 }	
-function freeze() {
-	controls_enabled = !controls_enabled;
-	if(controls_enabled && typeof renderer != 'undefined') {
-		animate();
-	}
-}
-function clearSettings() {
-	localStorage.clear();
-	location.reload();
-}
-
-//names of all variables to save to local storage, this isn't needed
-//gui_control_names = ["light_enabled","shadows_enabled","fix_plot_dimensions","fix_axes_loc","axes_origin","axes_label_x",,"axes_limit_x","axes_limit_y","axes_limit_z","axes_label_y","axes_label_z","axes_font_size","gui_state","axes_folder_state","axes_label_folder_state","plotsize_folder_state"]; //currently incomplete
 
 function initControlGui() {
+	loadGuiState();
 	gui = new dat.GUI({width: 220});
 	$('#gui_sidebar')[0].appendChild(gui.domElement);
 	$('.dg.main.a')[0].style.marginTop = '80px';
@@ -61,62 +60,183 @@ function initControlGui() {
 	savebar.className = 'save-row';
 	$('#plotarea').prepend(savebar);
 	
-	//to do in future: resize element dynamically
-	//http://www.backalleycoder.com/2013/03/18/cross-browser-event-based-element-resize-detection/
-	//
-
 	//.onChange(function(newValue) {saveGuiState();});
-	//axes controls
-	gui.add(gui_vars, 'bgcolor').name('Bckgrnd Color');
+	//gui.add(this, 'init').name('Plot Data');
+	//gui.add(this, 'reset').name('Reset');
+	//gui.add(this, 'exportpng').name('Export as PNG');
+	//gui.add(this, 'clearSettings').name('Clear Settings');
+	gui.add(gui_vars, 'bgcolor').name('Bckgrnd Color').listen();
+	gui.add(gui_vars, 'light_enabled').name('Add Light').listen();
+	//gui.add(gui_vars, 'shadows_enabled').name('Add Shadows');
 	axes_folder = gui.addFolder('Axes Controls');
-		axes_origin_control = axes_folder.add(gui_vars, 'axes_origin').name('Origin Location (x,y,z)');
-		axes_label_folder = axes_folder.addFolder('Axes Labels');
-			axes_label_folder.add(gui_vars, 'axes_label_x').name('X axis label');
-			axes_label_folder.add(gui_vars, 'axes_label_y').name('Y axis label');
-			axes_label_folder.add(gui_vars, 'axes_label_z').name('Z axis label');
-			axes_label_folder.add(gui_vars, 'axes_font_size').name('Axes Font Size');
+		axes_origin_control = axes_folder.add(gui_vars, 'axes_origin').name('Origin (x,y,z)').listen();
 		axes_limits_folder = axes_folder.addFolder('Axes Limits');
-			axes_limits_folder.add(gui_vars, 'axes_limit_x').name('X axis limits (x1,x2)');
-			axes_limits_folder.add(gui_vars, 'axes_limit_y').name('Y axis limits (y1,y2)');
-			axes_limits_folder.add(gui_vars, 'axes_limit_z').name('Z axis limits (z1,z2)');
-	
-	//plot size controls
+			axes_limits_folder.add(gui_vars, 'axes_limit_x').name('X (x1,x2)').listen();
+			axes_limits_folder.add(gui_vars, 'axes_limit_y').name('Y (y1,y2)').listen();
+			axes_limits_folder.add(gui_vars, 'axes_limit_z').name('Z (z1,z2)').listen();
+		axes_label_folder = axes_folder.addFolder('Axes Labels');
+			axes_label_folder.add(gui_vars, 'axes_label_x').name('X label').listen();
+			axes_label_folder.add(gui_vars, 'axes_label_y').name('Y label').listen();
+			axes_label_folder.add(gui_vars, 'axes_label_z').name('Z label').listen();
+			axes_label_folder.add(gui_vars, 'axes_font_size').name('Font Size').listen();
+		axes_tick_marks_folder = axes_folder.addFolder('Axes Tick Marks');
+			axes_tick_marks_folder.add(gui_vars, 'tick_coord_x').name('X coords').listen();
+			axes_tick_marks_folder.add(gui_vars, 'tick_coord_y').name('Y coords').listen();
+			axes_tick_marks_folder.add(gui_vars, 'tick_coord_z').name('Z coords').listen();
+			axes_tick_marks_folder.add(gui_vars, 'tick_font_size').name('Font Size').listen();
 	plot_size_folder = gui.addFolder('Plot Dimensions');
-		//plotsize_folder.add(gui_vars, 'fix_plot_dimensions').name('Fix Plot Size');
-		plot_size_folder.add(gui_vars, 'fix_height').name('Plot Height (px)');
-		plot_size_folder.add(gui_vars, 'fix_width').name('Plot Width (px)');
-		plot_scale_folder = gui.addFolder('Plot Scale Factors');
-		plot_scale_folder.add(gui_vars, 'scale_x').name('X dimension scale').min(10).max(100);
-		plot_scale_folder.add(gui_vars, 'scale_y').name('Y dimension scale').min(10).max(100);
-		plot_scale_folder.add(gui_vars, 'scale_z').name('Z dimension scale').min(10).max(100);
-		camera_loc_folder = gui.addFolder('Camera Location');
-		camera_loc_folder.add(gui_vars, 'cam_pos_x').name('Camera X position');
-		camera_loc_folder.add(gui_vars, 'cam_pos_x').name('Camera Y position');
-		camera_loc_folder.add(gui_vars, 'cam_pos_x').name('Camera Z position');
-	gui.add(gui_vars, 'light_enabled').name('Add Light');
-	gui.add(gui_vars, 'shadows_enabled').name('Add Shadows');
-	
-
-	gui.add(this, 'init').name('Plot Data');
-	gui.add(this, 'reset').name('Reset');
-	gui.add(this, 'exportpng').name('Export as PNG');
-	gui.add(this, 'clearSettings').name('Clear Settings');
-	//temp - open folders
-	for(var f in gui.__folders) {
-		console.log(f);
-		gui.__folders[f].open();
-	}
-	axes_limits_folder.open();
-	axes_label_folder.open();
+		plot_size_folder.add(gui_vars, 'fix_height').name('Height (px)').listen();
+		plot_size_folder.add(gui_vars, 'fix_width').name('Width (px)').listen();
+	plot_scale_folder = gui.addFolder('Plot Scale Factors');
+		plot_scale_folder.add(gui_vars, 'scale_x').min(10).max(100).name('X scale').listen();
+		plot_scale_folder.add(gui_vars, 'scale_y').min(10).max(100).name('Y scale').listen();
+		plot_scale_folder.add(gui_vars, 'scale_z').min(10).max(100).name('Z scale').listen();
+	camera_loc_folder = gui.addFolder('Camera Location');
+		camera_loc_folder.add(gui_vars, 'cam_pos_x').name('Camera X').listen();
+		camera_loc_folder.add(gui_vars, 'cam_pos_x').name('Camera Y').listen();
+		camera_loc_folder.add(gui_vars, 'cam_pos_x').name('Camera Z').listen();
+		
+	loadFoldersState();
 }
+
+
 
 function saveGuiState() {
-	//Object.keys(gui.__folders)
-	//for (var i = 0; i < gui_control_names.length; i ++) {
-	//	localStorage.setItem(document.location.href + "." + gui_control_names[i],window[gui_control_names[i]]);
-	//gui.__folders['Axes Controls'].closed
-	//}
+	localStorage.setItem(document.location.href + ".gui_vars", JSON.stringify(gui_vars));
+	
+	var gui_folder_vars = {};
+	var gui_folder_keys = Object.keys(gui.__folders);
+	for (var i = 0; i < gui_folder_keys.length; i++) {
+		gui_folder_vars[gui_folder_keys[i]] = gui.__folders[gui_folder_keys[i]].closed;
+	}
+	localStorage.setItem(document.location.href + ".gui_folder_vars",JSON.stringify(gui_folder_vars));
+	
+	var gui_axis_folder_vars = {};
+	var gui_axis_folder_keys = Object.keys(gui.__folders["Axes Controls"].__folders);
+	for (var i = 0; i < gui_axis_folder_keys.length; i++) {
+		gui_axis_folder_vars[gui_axis_folder_keys[i]] = gui.__folders["Axes Controls"].__folders[gui_axis_folder_keys[i]].closed;
+	}
+	localStorage.setItem(document.location.href + ".gui_axis_folder_vars",JSON.stringify(gui_axis_folder_vars));
 }
+
+function loadGuiState() {
+	loadDefaultSettings();
+	var gui_vars_replace = JSON.parse(localStorage.getItem(document.location.href + ".gui_vars"));
+	if(gui_vars_replace != undefined) {
+		var gui_vars_keys = Object.keys(gui_vars);
+		for (var i = 0; i < gui_vars_keys.length; i++) {
+			var gv = gui_vars_replace[gui_vars_keys[i]];
+			if(gv != undefined) {
+				gui_vars[gui_vars_keys[i]] = gv;
+			}
+		}
+	}
+}
+
+function loadFoldersState() {	
+	var gui_folder_vars_replace = JSON.parse(localStorage.getItem(document.location.href + ".gui_folder_vars"));
+	if(gui_folder_vars_replace != undefined) {
+		var gui_folder_keys = Object.keys(gui.__folders);
+		for (var i = 0; i < gui_folder_keys.length; i++) {
+			var folder_closed = gui_folder_vars_replace[gui_folder_keys[i]];
+			if(folder_closed == true) {
+				gui.__folders[gui_folder_keys[i]].close();
+			} else {
+				gui.__folders[gui_folder_keys[i]].open();
+			}
+		}
+	} else {
+		axes_folder.open();
+		plot_size_folder.open();
+		plot_scale_folder.open();
+		camera_loc_folder.open();
+	}
+	var gui_axis_folder_vars_replace = JSON.parse(localStorage.getItem(document.location.href + ".gui_axis_folder_vars"));
+	if(gui_axis_folder_vars_replace != undefined) {
+		var gui_axis_folder_keys = Object.keys(gui.__folders["Axes Controls"].__folders);
+		for (var i = 0; i < gui_axis_folder_keys.length; i++) {
+			var folder_closed = gui_axis_folder_vars_replace[gui_axis_folder_keys[i]];
+			if(folder_closed == true) {
+				gui.__folders["Axes Controls"].__folders[gui_axis_folder_keys[i]].close();
+			} else {
+				gui.__folders["Axes Controls"].__folders[gui_axis_folder_keys[i]].open();
+			}
+		}
+	} else {
+		axes_label_folder.open();
+		axes_limits_folder.open();
+		axes_tick_marks_folder.open();
+	}
+}
+
+function clearGuiState() {
+	localStorage.getItem(document.location.href + ".gui_axis_folder_vars");
+	localStorage.getItem(document.location.href + ".gui_folder_vars");
+	localStorage.getItem(document.location.href + ".gui_vars");
+	
+	loadDefaultSettings();
+	
+	axes_folder.open();
+	axes_label_folder.open();
+	axes_limits_folder.open();
+	axes_tick_marks_folder.open();
+	plot_size_folder.open();
+	plot_scale_folder.open();
+	camera_loc_folder.open();
+	
+}
+
+
+//old, new use JSON
+/*
+function saveGuiState() {
+	var gui_keys = Object.keys(gui_vars);
+	for (var i = 0; i < gui_keys.length; i++) {
+		localStorage.setItem(document.location.href + "." + gui_keys[i],gui_vars[gui_keys[i]]);
+	}
+	var gui_folder_keys = Object.keys(gui.__folders);
+	for (var i = 0; i < gui_folder_keys.length; i++) {
+		localStorage.setItem(document.location.href + ".folders." + gui_folder_keys[i],gui.__folders[gui_folder_keys[i]].closed);
+	}
+}
+
+
+//firefox/chrome can only store strings in localstorage 2-7-15
+function loadGuiState() {
+	//folders
+	var gui_folder_keys = Object.keys(gui.__folders);
+	for (var i = 0; i < gui_folder_keys.length; i++) {
+		var folder_closed = localStorage.getItem(document.location.href + ".folders." + gui_folder_keys[i]);
+		if(folder_closed === null || folder_closed == "false" || folder_closed == false) {
+			gui.__folders[gui_folder_keys[i]].open();
+		} else {
+			gui.__folders[gui_folder_keys[i]].close();
+		}
+	}
+	//variables
+	var gui_keys = Object.keys(gui_vars);
+	for (var i = 0; i < gui_keys.length; i++) {
+		var gvar = localStorage.getItem(document.location.href + "." + gui_keys[i]);
+		if(gvar === null) continue;
+		var gtype = typeof gui_vars[gui_keys[i]];
+		switch(gtype) {
+			case "string":
+				gui_vars[gui_keys[i]] = gvar;
+				break;
+			case "number":
+				gui_vars[gui_keys[i]] = parseFloat(gvar);
+				break;
+			case "boolean":
+				gui_vars[gui_keys[i]] = gvar == "true" || gvar == true ? true : false;
+				break;
+		}
+	}
+}
+*/
+
+
+
+
 
 
 
