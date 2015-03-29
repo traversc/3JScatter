@@ -13,7 +13,7 @@ function customRenderer(instance, td, row, col, prop, value, cellProperties) {
   td.style.textAlign = "center";
 }
 
-function initDataInput() {
+function initDatasheet() {
 	var table_data_replace = JSON.parse(localStorage.getItem(document.location.href + ".table_data"));
 	table_data = table_data_replace == undefined ? [d3.csv.parseRows(demostring02)] : table_data_replace;
 	page_number = 0;
@@ -43,41 +43,20 @@ function initDataInput() {
 		}
 	});
 	
+
 	$("#add_points").on('click', function(event) {
-		table_data.push([["series","x","y","z","pch","color","outline_color","size","hist","hist_color","euler_x","euler_y","euler_z"],["point",,,,,,,,,,,,]]);
+		table_data.push([["series","x","y","z","pch","color","outline_color","size","hist","hist_color","euler_x","euler_y","euler_z"],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,],[,,,,,,,,,,,,]]);
 		page_number = table_data.length - 1;
 		hot_table.loadData(table_data[page_number]);
 		updatePagination();
 	});
 	
 	$("#add_lines").on('click', function(event) {
-		table_data.push([["series","x","y","z","pch","color","outline_color","size","hist","hist_color","euler_x","euler_y","euler_z","lty","line_size","line_color"],["line",,,,,,,,,,,,,,,]]);
+		table_data.push([["series","x","y","z","pch","color","outline_color","size","hist","hist_color","euler_x","euler_y","euler_z","lty","line_size","line_color"],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,],[,,,,,,,,,,,,,,,]]);
 		page_number = table_data.length - 1;
 		hot_table.loadData(table_data[page_number]);
 		updatePagination();
 	});
-
-	$("#add_spline").on('click', function(event) {
-		table_data.push([["series","x","y","z","color","size","segments"],["spline",,,,,,]]);
-		page_number = table_data.length - 1;
-		hot_table.loadData(table_data[page_number]);
-		updatePagination();
-	});
-	
-	$("#add_text").on('click', function(event) {
-		table_data.push([["series","x","y","z","text","color","size"],["text",,,,,,,]]);
-		page_number = table_data.length - 1;
-		hot_table.loadData(table_data[page_number]);
-		updatePagination();
-	});
-	
-	$("#add_lights").on('click', function(event) {
-		table_data.push([["series","x","y","z","lit","color","brightness"],["light",,,,,,,]]);
-		page_number = table_data.length - 1;
-		hot_table.loadData(table_data[page_number]);
-		updatePagination();
-	});
-	
 	
 	$("#delete_series").on('click', function(event) {
 		if(table_data.length == 1) {
@@ -92,29 +71,11 @@ function initDataInput() {
 	});
 	
 
-	//Handsontable.Dom.addEvent(window, 'resize', calculateSize); //repalced with jquery
-	$(window).resize(function() {
-		calculateSize();
-		if(RENDERER.domElement.id == "myRENDERER" & gui_vars.fix_width == 'auto') {
-			PLOT_WIDTH = document.getElementById('plotarea').clientWidth;
-			PLOT_HEIGHT = document.getElementById('plotarea').clientHeight;
-			RENDERER.setSize(PLOT_WIDTH, PLOT_HEIGHT);
-			if(CAMERA instanceof THREE.PerspectiveCamera) {
-				CAMERA.aspect = PLOT_WIDTH / PLOT_HEIGHT;
-				CAMERA.updateProjectionMatrix();
-			} else { //Orthographic
-				CAMERA.left = -PLOT_WIDTH/2;
-				CAMERA.right = PLOT_WIDTH/2;
-				CAMERA.top = PLOT_HEIGHT/2;
-				CAMERA.bottom = -PLOT_HEIGHT/2;
-				CAMERA.updateProjectionMatrix();
-			}
-		}
-	});
-
 	calculateSize();
+	Handsontable.Dom.addEvent(window, 'resize', calculateSize); //can replace with jquery?
 	updatePagination();
-
+	
+	
 }
 
 
@@ -178,25 +139,6 @@ function table2csv() {
 	return csv;
 }
 
-function table2Objects() {
-	function array2Object(arr) {
-		var labels = arr[0];
-		var rv = [];
-		for (var i = 1; i < arr.length; ++i) {
-			rv[i-1] = {};
-			for(var j = 0; j < arr[0].length; j++) {
-				rv[i-1][labels[j]] = arr[i][j];
-			}
-		}
-		return rv;
-	}
-	rv = [];
-	for (var i = 0; i < table_data.length; ++i) {
-		rv[i] = array2Object(table_data[i]);
-	}
-	return rv;
-}
-
 /* http://stackoverflow.com/a/22184713/2723734 */
 /**
  * Class for creating csv strings
@@ -254,42 +196,4 @@ function csvWriter(del, enc) {
 		}
 		return arr2.join("\r\n");
 	};
-}
-
-function demo1() {
-	gui_vars.cam_pos_x = 75;
-	gui_vars.cam_pos_y = 120;
-	gui_vars.cam_pos_z = 150;
-	gui_vars.axes_origin = '-13.94088,18.45637,-48.347339899';
-	gui_vars.axes_label_x = 'PC1';
-	gui_vars.axes_label_y = 'PC2';
-	gui_vars.axes_label_z = 'PC3';
-	gui_vars.axes_font_size = 3;
-	gui_vars.axes_limit_x = '-61.08749847,33.20573654';
-	gui_vars.axes_limit_y = '-43.00385156,79.91658524';
-	gui_vars.axes_limit_z = '-48.34733989,29.88257884';
-	gui_vars.scale_x = 50;
-	gui_vars.scale_y = 50;
-	gui_vars.scale_z = 25;
-	table_data = [d3.csv.parseRows(demostring01)];
-	hot_table.loadData(table_data[0]);
-	main();
-}
-function demo2() {
-	gui_vars.cam_pos_x = 6.8111164727439535;
-	gui_vars.cam_pos_y = -258.9940054581132;
-	gui_vars.cam_pos_z = 41.374497176635742;
-	gui_vars.axes_origin = '-1.2,-1.2,-1.2';
-	gui_vars.axes_limit_x = '-2,2';
-	gui_vars.axes_limit_y = '-2,2';
-	gui_vars.axes_limit_z = '-2,2';
-	gui_vars.plot_type = "Plane";
-	table_data = [d3.csv.parseRows(demostring02)];
-	hot_table.loadData(table_data[0]);
-	main();
-}
-function demo3() {
-	//$('#textinputarea').get(0).value = demostring03;
-	hot_table.loadData(d3.csv.parseRows(demostring03));
-	main();
 }
