@@ -55,7 +55,7 @@ function initControlGui() {
 	//replace hide function with empty function.  There is no way to remove an anonymous function event, nor a built in option to disable.  Silly dat.gui
 	dat.GUI.toggleHide = function () {};
 	
-	gui = new dat.GUI({width: 220});
+	gui = new dat.GUI({width: 218});
 	loadGuiState();
 	$('#gui_sidebar')[0].appendChild(gui.domElement);
 	$('.dg.main.a')[0].style.marginTop = '80px';

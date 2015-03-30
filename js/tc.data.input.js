@@ -4,7 +4,7 @@ var table_data = [];
 var page_number;
 var pagelink_elements = [];
 
-
+var footer_height = 400;
 
 function customRenderer(instance, td, row, col, prop, value, cellProperties) {
   Handsontable.renderers.TextRenderer.apply(this, arguments);
@@ -93,23 +93,51 @@ function initDataInput() {
 	
 
 	//Handsontable.Dom.addEvent(window, 'resize', calculateSize); //repalced with jquery
-	$(window).resize(function() {
-		calculateSize();
-		if(RENDERER.domElement.id == "myRENDERER" & gui_vars.fix_width == 'auto') {
-			PLOT_WIDTH = document.getElementById('plotarea').clientWidth;
-			PLOT_HEIGHT = document.getElementById('plotarea').clientHeight;
-			RENDERER.setSize(PLOT_WIDTH, PLOT_HEIGHT);
-			if(CAMERA instanceof THREE.PerspectiveCamera) {
-				CAMERA.aspect = PLOT_WIDTH / PLOT_HEIGHT;
-				CAMERA.updateProjectionMatrix();
-			} else { //Orthographic
-				CAMERA.left = -PLOT_WIDTH/2;
-				CAMERA.right = PLOT_WIDTH/2;
-				CAMERA.top = PLOT_HEIGHT/2;
-				CAMERA.bottom = -PLOT_HEIGHT/2;
-				CAMERA.updateProjectionMatrix();
+	$(window).on('resize',calculateSize);
+
+	//dynamically set footer/plot area heights
+	var footer = $("#footer");
+	footer.css('height',footer_height + 'px');
+	var fh = parseInt(footer.css('height'),10);
+	var wh = $(window).height();
+	var rt = wh - fh - 12;
+	var ph = wh - fh - 15;
+	$("#resize_handle").css('top',rt + 'px');
+	$("#plotarea").css('height',ph + 'px');
+
+
+	$("#resize_handle").on('mousedown', function(e) {
+		$(document).on('mousemove', function(e) {
+			var footer = $('#footer');
+			var plotarea = $('#plotarea');
+			var resizer = $("#resize_handle");
+			var wh = $(window).height();
+			var min_top = 20;
+			var max_top = wh - 350;
+			var loc = Math.min(Math.max(e.clientY,min_top), max_top);
+			resizer.css('top',loc + 'px');
+			//the following is really slow in firefox for some reason
+			if(navigator.userAgent.toLowerCase().indexOf('firefox') == -1) {
+				footer.css('height',wh - loc - 12 + 'px');
+				plotarea.css('height',loc - 3 + 'px');
+				calculateSize();
 			}
-		}
+		});
+		$(document).on('mouseup', function stopDrag(e) {
+			$(document).off('mousemove');
+			$(document).off('mouseup');
+			var footer = $('#footer');
+			var plotarea = $('#plotarea');
+			var resizer = $("#resize_handle");
+			var wh = $(window).height();
+			var min_top = 20;
+			var max_top = wh - 350;
+			var loc = Math.min(Math.max(e.clientY,min_top), max_top);
+			footer.css('height',wh - loc - 12 + 'px');
+			plotarea.css('height',loc - 3 + 'px');
+			resizer.css('top',loc + 'px');
+			calculateSize();
+		});
 	});
 
 	calculateSize();
@@ -154,6 +182,27 @@ function updatePagination() {
 }
 
 function calculateSize() {
+	var fh = parseInt($("#footer").css('height'),10);
+	var wh = $(window).height();
+	var rt = wh - fh - 12;
+	var ph = wh - fh - 15;
+	$("#resize_handle").css('top',rt + 'px');
+	$("#plotarea").css('height',ph + 'px');
+	if(RENDERER.domElement.id == "myRENDERER" & gui_vars.fix_width == 'auto') {
+		PLOT_WIDTH = document.getElementById('plotarea').clientWidth;
+		PLOT_HEIGHT = document.getElementById('plotarea').clientHeight;
+		RENDERER.setSize(PLOT_WIDTH, PLOT_HEIGHT);
+		if(CAMERA instanceof THREE.PerspectiveCamera) {
+			CAMERA.aspect = PLOT_WIDTH / PLOT_HEIGHT;
+			CAMERA.updateProjectionMatrix();
+		} else { //Orthographic
+			CAMERA.left = -PLOT_WIDTH/2;
+			CAMERA.right = PLOT_WIDTH/2;
+			CAMERA.top = PLOT_HEIGHT/2;
+			CAMERA.bottom = -PLOT_HEIGHT/2;
+			CAMERA.updateProjectionMatrix();
+		}
+	}
     //var offset = Handsontable.Dom.offset(datasheet_element);
     //availableWidth = Handsontable.Dom.innerWidth(footer) - offset.left + window.scrollX;
     //availableHeight = Handsontable.Dom.innerHeight(footer) - offset.top + window.scrollY;

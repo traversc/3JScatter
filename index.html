@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html itemscope="" itemtype="http://schema.org/WebPage" lang="en">
+<html>
 <head>
 <meta content="text/html;charset=utf-8" http-equiv="Content-Type">
 <meta content="utf-8" http-equiv="encoding">
@@ -25,8 +25,6 @@
 	<link rel="stylesheet" href="css/bootstrap-theme_button.css">
 	<link type="text/css" href="css/styles.css" rel="stylesheet"/>
 	<link type="text/css" href="css/pagination_styles.css" rel="stylesheet"/>
-	
-
 </head>
 <body>
 	<!--div id="title">3JScatter: 3D scatter plotter</div-->
@@ -37,7 +35,7 @@
 	<!--Demo 3: <a href="javascript:demo3();">Line plot example (Dow Jones Industrial Average)</a><br><br>-->
 	<span id="notice">This page uses Javascript and WebGL.  Please use the latest version of Chrome or Firefox.</span>
 	</div>
-	
+	<div id = "resize_handle"></div>
 	<div id="footer">
 		<div id="input_container">
 			Input Controls
@@ -79,7 +77,6 @@
 	<script>
 	initControlGui();
 	initDataInput();
-
 	function main() {
 		$("#plotarea").empty();
 		if (! Detector.webgl) {
@@ -100,24 +97,24 @@
 			var data_type = data_series[0].series;
 			switch(data_type) {
 				case "point":
-					setTimeout(function(data_series, last) {plotPoint(data_series); if(last) $('*').css('cursor','default');},0,data_series, last);
+					setTimeout(function(data_series, last) {plotPoint(data_series); if(last) $('*').css('cursor','');},0,data_series, last);
 					//plotPoint(data_series);
 					break;
 				case "line":
 					//plotPoint(data_series);
 					//plotLine(data_series);
-					setTimeout(function(data_series, last) {plotPoint(data_series); plotLine(data_series); if(last) $('*').css('cursor','default');},0,data_series, last);
+					setTimeout(function(data_series, last) {plotPoint(data_series); plotLine(data_series); if(last) $('*').css('cursor','');},0,data_series, last);
 					break;
 				case "spline":
-					setTimeout(function(data_series, last) {plotSpline(data_series); if(last) $('*').css('cursor','default');},0,data_series, last);
+					setTimeout(function(data_series, last) {plotSpline(data_series); if(last) $('*').css('cursor','');},0,data_series, last);
 					//plotSpline(data_series); 
 					break;
 				case "text":
-					setTimeout(function(data_series, last) {plotText(data_series); if(last) $('*').css('cursor','default');},0,data_series, last);
+					setTimeout(function(data_series, last) {plotText(data_series); if(last) $('*').css('cursor','');},0,data_series, last);
 					//plotText(data_series);
 					break;
 				case "light":
-					setTimeout(function(data_series, last) {plotLight(data_series); if(last) $('*').css('cursor','default');},0,data_series, last);
+					setTimeout(function(data_series, last) {plotLight(data_series); if(last) $('*').css('cursor','');},0,data_series, last);
 					//plotLight(data_series);
 					break;
 			}
@@ -131,15 +128,15 @@
 		if(gui_vars.fix_width == 'auto') {
 			PLOT_WIDTH = document.getElementById('plotarea').clientWidth;
 		} else {
-			PLOT_WIDTH = parseInt(gui_vars.fix_width);
+			PLOT_WIDTH = parseInt(gui_vars.fix_width,10);
 		}
 		if(gui_vars.fix_height == 'auto') {
 			PLOT_HEIGHT = document.getElementById('plotarea').clientHeight;
 		} else {
-			PLOT_HEIGHT = parseInt(gui_vars.fix_height);
+			PLOT_HEIGHT = parseInt(gui_vars.fix_height,10);
 		}
 		RENDERER.setSize(PLOT_WIDTH, PLOT_HEIGHT);
-		RENDERER.setClearColor(parseInt(gui_vars.bgcolor), 1.0);
+		RENDERER.setClearColor(parseInt(gui_vars.bgcolor,16), 1.0);
 		//if(gui_vars.shadows_enabled) {RENDERER.shadowMapEnabled = true;}
 		//RENDERER.shadowMapType = THREE.PCFSoftShadowMap;
 		RENDERER.domElement.id = "myRENDERER";
@@ -565,7 +562,7 @@
 					circle.lineTo(x, y);
 				}
 			}
-			var geom = new THREE.ExtrudeGeometry(circle, {steps: parseInt(segments), extrudePath: curve});
+			var geom = new THREE.ExtrudeGeometry(circle, {steps: parseInt(segments,10), extrudePath: curve});
 			var material = new THREE.MeshLambertMaterial({emissive: line_color, ambient: line_color});
 			var mesh = new THREE.Mesh(geom, material);
 			SCENE.add(mesh);

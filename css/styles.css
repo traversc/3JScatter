@@ -1,3 +1,12 @@
+* {
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+}
+
 body {
 	background-color: #FFFFFF;
 	margin: 0;
@@ -15,25 +24,59 @@ label {
 }
 
 #footer {
+	background-color: #FFFFFF;
     position: absolute;
-	z-index: 0;
+	z-index: 1;
     bottom: 2px;
 	left: 2px;
     width: calc(100% - 229px);
-	height: 380px;
-    box-shadow: 5px 5px 15px #20416B;
+	/*height: 380px;*/
+    box-shadow: 0px 5px 15px #20416B;
 	padding: 2px 2px 2px 2px; 
-    border-radius: 6px;
-	
+    border-radius: 0px 0px 6px 6px;
+    border-right-style: solid;
+    border-left-style: solid;
+    border-color: #cccccc;
+    border-width: 1px;
+}
+
+#resize_handle {
+	position: absolute;
+	z-index: 2;
+	/*top: calc(100% - 392px);*/
+	width: calc(100% - 225px);
+	background-repeat: no-repeat;
+	background-position: center;
+	background-clip: border-box;
+	background-color: #eeeeee;
+	background-image: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAA8AAAAFCAMAAACtk0YeAAAABlBMVEXLy8v////hf8FnAAAAEElEQVQI12NgRAUM6IBEeQAHWAAu6W7/ZQAAAABJRU5ErkJggg==);
+	cursor: row-resize;
+	height: 6px;
+	left: 2px;
+	border-radius: 6px 6px 0px 0px;
+    border-top-style: solid;
+    border-right-style: solid;
+    border-left-style: solid;
+    border-color: #cccccc;
+    border-width: 1px;
+	margin-bottom: 0px;
+	margin-left: 0px;
+	margin-right: 0px;
+	margin-top: 0px;
+	margin-bottom: 0px;
+	padding-bottom: 0px;
+	padding-left: 0px;
+	padding-right: 0px;
+	padding-top: 0px;
+
 }
 
 #plotarea {
     position: absolute;
 	z-index: 0;
     width: calc(100% - 225px);
-	height: calc(100% - 390px);
+	/*height: calc(100% - 395px);*/
 	top: 2px;
-    bottom: 2px;
 	left: 2px;
 	background: #FFFFFF;
     color: #042E64;
