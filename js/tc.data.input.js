@@ -107,6 +107,7 @@ function initDataInput() {
 
 
 	$("#resize_handle").on('mousedown', function(e) {
+		$('*').css('cursor','row-resize');
 		$(document).on('mousemove', function(e) {
 			var footer = $('#footer');
 			var plotarea = $('#plotarea');
@@ -124,6 +125,7 @@ function initDataInput() {
 			}
 		});
 		$(document).on('mouseup', function stopDrag(e) {
+			$('*').css('cursor','');
 			$(document).off('mousemove');
 			$(document).off('mouseup');
 			var footer = $('#footer');
