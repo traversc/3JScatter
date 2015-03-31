@@ -1,9 +1,9 @@
-gui_vars = {} //global
+$( document ).ready(function() {
+	gui_vars = {} //global
+})
 
 function loadDefaultSettings() {
-	//
-	//gui_vars.light_enabled = true;
-	//gui_vars.shadows_enabled = false;
+
 	gui_vars.axes_origin = 'auto';
 
 	gui_vars.axes_label_x = 'x';

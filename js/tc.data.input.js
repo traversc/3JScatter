@@ -1,10 +1,12 @@
-var datasheet_element,hot_table,datasheet_container_element;
-
-var table_data = [];
-var page_number;
-var pagelink_elements = [];
-
-var footer_height = 400;
+$( document ).ready(function() {
+	datasheet_element = undefined;
+	hot_table = undefined;
+	datasheet_container_element = undefined;
+	table_data = [];
+	page_number  = undefined;
+	pagelink_elements = [];
+	footer_height = 400;
+})
 
 function customRenderer(instance, td, row, col, prop, value, cellProperties) {
   Handsontable.renderers.TextRenderer.apply(this, arguments);

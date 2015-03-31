@@ -75,8 +75,12 @@
 	
 	
 	<script>
-	initControlGui();
-	initDataInput();
+	
+	$( document ).ready(function() {
+		initControlGui();
+		initDataInput();
+	})
+	
 	function main() {
 		$("#plotarea").empty();
 		if (! Detector.webgl) {
