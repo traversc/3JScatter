@@ -24,6 +24,7 @@ label {
 }
 
 #footer {
+	overflow: hidden;
 	background-color: #FFFFFF;
     position: absolute;
 	z-index: 1;
@@ -103,8 +104,8 @@ label {
 #input_container {
 	position: relative;
 	left: 0px;
-	top: 50%;
-	transform: translateY(-50%);
+	top: 10px;
+	/*transform: translateY(-50%);*/
 	font-family: "Helvetica Neue", "HelveticaNeue", Helvetica, Arial, sans-serif;
 	font-weight: bold;
 	font-size: 16px;
@@ -155,10 +156,9 @@ table.htCore td {
 	bottom: 0px;
 	right: 0px;
 	font: 8px 'Lucida Console', sans-serif;
-	margin-top: 1px;
-	margin: 2.5px;
-	border-radius: 2px;
-	line-height: 27px;
+	margin: 0px;
+	border-radius: 0px;
+	/*line-height: 27px;*/
 	color: #333;
 }
 

@@ -113,7 +113,7 @@ function initDataInput() {
 			var resizer = $("#resize_handle");
 			var wh = $(window).height();
 			var min_top = 20;
-			var max_top = wh - 350;
+			var max_top = wh - 6;
 			var loc = Math.min(Math.max(e.clientY,min_top), max_top);
 			resizer.css('top',loc + 'px');
 			//the following is really slow in firefox for some reason
@@ -131,7 +131,7 @@ function initDataInput() {
 			var resizer = $("#resize_handle");
 			var wh = $(window).height();
 			var min_top = 20;
-			var max_top = wh - 350;
+			var max_top = wh - 6;
 			var loc = Math.min(Math.max(e.clientY,min_top), max_top);
 			footer.css('height',wh - loc - 12 + 'px');
 			plotarea.css('height',loc - 3 + 'px');
